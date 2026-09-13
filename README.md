@@ -1,6 +1,5 @@
-# 🚀 [NullThreat]
+# 🚀 Threat Intelligence Correlation & Alert Prioritisation Assistant
 
-> ⚠️ **Replace everything in `[ ]` brackets with your actual content before submission.**
 
 ---
 
@@ -8,10 +7,10 @@
 
 | Field | Value |
 |---|---|
-| **Team Name** | [NullThreat] |
-| **Track** | [AI] |
-| **Team Lead** | [Bhargav Paragkumar Jagtap] — [26cs031@charusat.edu.in] |
-| **Members** | [Milonee Shah], [Saumya Jain], [Ohm Soman] |
+| **Team Name** | NullThreat |
+| **Track** | AI |
+| **Team Lead** | Bhargav Paragkumar Jagtap — 26cs031@charusat.edu.in |
+| **Members** | Milonee Shah, Saumya Jain, Ohm Soman |
 
 ---
 
@@ -19,10 +18,10 @@
 
 > In 2–3 sentences: What problem does your project solve? Who experiences this problem?
 
-[Defence analysts face thousands of alerts from different sources,
+Defence analysts face thousands of alerts from different sources,
 making it difficult to identify genuine threats while filtering out false positives.
 The solution prioritizes critical threats and generate clear BLUF (Bottom Line Up Front)
-summaries so commanders can quickly understand the situation and take action.]
+summaries so commanders can quickly understand the situation and take action.
 
 ---
 
@@ -30,17 +29,16 @@ summaries so commanders can quickly understand the situation and take action.]
 
 > In 2–3 sentences: What did you build? How does it solve the problem above?
 
-[The solution prioritizes genuine and critical threats while filtering out false positives from thousands of alerts. It generates clear BLUF summaries to help commanders quickly understand threats and make informed decisions.]
+The solution prioritizes genuine and critical threats while filtering out false positives from thousands of alerts. It generates clear BLUF summaries to help commanders quickly understand threats and make informed decisions.
 
 ---
 
 ## ✨ Key Features
 
-- **Feature 1:** [Automated alert classification (false positive vs. real threat) using LLM analysis]
-- **Feature 2:** [ MITRE ATT&CK technique mapping for confirmed threats]
-- **Feature 3:** [Correlated grouping of related alerts into single incidents]
-- **Feature 4:** [Auto-generated BLUF-style threat summary report]
-- **Feature 5:** [Optional]
+- **Feature 1:** Automated alert classification (false positive vs. real threat) using LLM analysis
+- **Feature 2:** MITRE ATT&CK technique mapping for confirmed threats
+- **Feature 3:** Correlated grouping of related alerts into single incidents
+- **Feature 4:** Auto-generated BLUF-style threat summary report
 
 ---
 
@@ -48,11 +46,11 @@ summaries so commanders can quickly understand the situation and take action.]
 
 | Category | Technologies |
 |---|---|
-| **Languages** | [Python] |
-| **Frameworks** | [None — command-line scripts only] |
-| **IBM Technologies** | [IBM Bob, watsonx.ai] |
-| **Databases** | [alerts and results stored as CSV/JSON files] |
-| **Other** | [GitHub Actions] |
+| **Languages** | Python |
+| **Frameworks** | None — command-line scripts only |
+| **IBM Technologies** | IBM Bob, watsonx.ai |
+| **Databases** | alerts and results stored as CSV/JSON files|
+| **Other** | GitHub Actions |
 
 ---
 
@@ -81,17 +79,18 @@ summaries so commanders can quickly understand the situation and take action.]
 ```bash
 # 1. Clone the repo
 git clone https://github.com/OhmRobin1/bob-ai-hackathon--NullThreat-.git
-cd [your-repo]
+cd bob-ai-hackathon-nullthreat
 
 # 2. Install dependencies
-[your install command here]
+pip install -r requirements.txt
 
 # 3. Configure environment
 cp .env.example .env
 # Edit .env with your values
 
 # 4. Run the project
-[your run command here]
+python src/classify_alerts.py
+python src/generate_report.py
 ```
 
 ---
@@ -111,14 +110,15 @@ cp .env.example .env
 
 > Be honest — judges appreciate transparency over overclaiming.
 
-- [Limitation 1: Uses a simulated alert dataset, not a live SIEM/satellite feed integration]
-- [Limitation 2: MITRE ATT&CK mapping is limited to a predefined reference list of ~10 techniques, not the full framework]
-- [Limitation 3: No persistent database — results are generated per run, not stored historically]
+- Limitation 1: Uses a simulated alert dataset, not a live SIEM/satellite feed integration
+- Limitation 2: MITRE ATT&CK mapping is limited to a predefined reference list of ~10 techniques, not the full framework
+- Limitation 3: No persistent database — results are generated per run, not stored historically
 
 ---
 
 ## 🏅 What We're Most Proud Of
 
-[Tell the judges what part of your submission is strongest and worth paying close attention to.]
+Tell the judges what part of your submission is strongest and worth paying close attention to.
 
 ---
+
