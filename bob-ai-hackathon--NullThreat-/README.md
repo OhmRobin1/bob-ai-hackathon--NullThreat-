@@ -67,7 +67,7 @@ NullThreat is an AI-powered alert triage tool that ingests security alerts, uses
 
 ## ⚡ How to Run
 
-> git clone https://github.com/OhmRobin1/bob-ai-hackathon-nullthreat.git
+git clone https://github.com/OhmRobin1/bob-ai-hackathon-nullthreat.git
 cd bob-ai-hackathon-nullthreat
 
 pip install -r requirements.txt
