@@ -1,0 +1,601 @@
+{
+  "run_metadata": {
+    "model": "rule-based-demo",
+    "mode": "demo",
+    "total_alerts": 40,
+    "real_threats": 17,
+    "false_positives": 23,
+    "incident_groups": 10
+  },
+  "alerts": [
+    {
+      "alert_id": "ALT-001",
+      "timestamp": "2024-11-01T00:12:34Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Scheduled backup job completed successfully on server BKP-04",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-002",
+      "timestamp": "2024-11-01T01:05:11Z",
+      "source_system": "cyber sensor",
+      "severity": "low",
+      "description": "Port scan detected from internal host 10.4.2.17 \u2014 routine vulnerability scan by IT team",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-003",
+      "timestamp": "2024-11-01T02:33:47Z",
+      "source_system": "SIEM",
+      "severity": "medium",
+      "description": "Multiple failed SSH login attempts on bastion host from IP 203.0.113.45",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "valid_accounts",
+      "mitre_technique": "T1078 - Valid Accounts",
+      "reason": "Repeated SSH failures suggest brute-force attempt"
+    },
+    {
+      "alert_id": "ALT-004",
+      "timestamp": "2024-11-01T03:14:02Z",
+      "source_system": "intel report",
+      "severity": "high",
+      "description": "Threat intel feed flags IP 198.51.100.22 as known C2 server; traffic observed from workstation WS-118",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "application_protocol",
+      "mitre_technique": "T1071 - Application Layer Protocol",
+      "reason": "Traffic to known C2 server detected"
+    },
+    {
+      "alert_id": "ALT-005",
+      "timestamp": "2024-11-01T04:08:55Z",
+      "source_system": "satellite feed",
+      "severity": "low",
+      "description": "Satellite uplink signal anomaly \u2014 attributed to scheduled maintenance window",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-006",
+      "timestamp": "2024-11-01T05:47:29Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "User account password reset via self-service portal \u2014 routine activity",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-007",
+      "timestamp": "2024-11-01T06:22:10Z",
+      "source_system": "cyber sensor",
+      "severity": "critical",
+      "description": "Outbound DNS queries to known DGA domain pattern detected from host 10.2.5.33",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "application_protocol",
+      "mitre_technique": "T1071 - Application Layer Protocol",
+      "reason": "DGA domain pattern indicates C2 beaconing"
+    },
+    {
+      "alert_id": "ALT-008",
+      "timestamp": "2024-11-01T07:03:58Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Antivirus definitions updated on endpoint EP-204 \u2014 no threats found",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-009",
+      "timestamp": "2024-11-01T08:19:43Z",
+      "source_system": "intel report",
+      "severity": "high",
+      "description": "Phishing email campaign targeting defense contractors detected; two internal users clicked malicious link",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "phishing",
+      "mitre_technique": "T1566 - Phishing",
+      "reason": "Phishing campaign or click-through detected"
+    },
+    {
+      "alert_id": "ALT-010",
+      "timestamp": "2024-11-01T09:44:17Z",
+      "source_system": "SIEM",
+      "severity": "medium",
+      "description": "Unusual outbound traffic spike (2.3 GB) to external IP 192.0.2.88 from server SRV-07",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "data_exfiltration",
+      "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+      "reason": "Anomalous outbound volume to external IP"
+    },
+    {
+      "alert_id": "ALT-011",
+      "timestamp": "2024-11-01T10:05:31Z",
+      "source_system": "cyber sensor",
+      "severity": "low",
+      "description": "TLS certificate renewal detected on web gateway WG-01 \u2014 expected activity",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-012",
+      "timestamp": "2024-11-01T11:27:09Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "System log rotation executed on database server DB-03 \u2014 routine maintenance",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-013",
+      "timestamp": "2024-11-01T12:02:44Z",
+      "source_system": "cyber sensor",
+      "severity": "high",
+      "description": "Lateral movement indicators: SMB enumeration from WS-044 to 14 internal hosts within 3 minutes",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "lateral_movement_smb",
+      "mitre_technique": "T1021.002 - Remote Services: SMB/Windows Admin Shares",
+      "reason": "SMB-based lateral movement across internal hosts"
+    },
+    {
+      "alert_id": "ALT-014",
+      "timestamp": "2024-11-01T13:15:22Z",
+      "source_system": "satellite feed",
+      "severity": "medium",
+      "description": "Encrypted satellite telemetry burst outside scheduled window \u2014 under investigation",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-015",
+      "timestamp": "2024-11-01T14:33:05Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "New software package installed on workstation WS-201 via approved deployment tool",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-016",
+      "timestamp": "2024-11-01T15:08:47Z",
+      "source_system": "intel report",
+      "severity": "critical",
+      "description": "Zero-day exploit for VPN appliance publicly disclosed; unpatched device VPN-02 detected in environment",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "exploit_public_app",
+      "mitre_technique": "T1190 - Exploit Public-Facing Application",
+      "reason": "Active exploitation of public-facing application"
+    },
+    {
+      "alert_id": "ALT-017",
+      "timestamp": "2024-11-01T15:52:19Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "User logged in from approved remote access IP range \u2014 normal telework activity",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-018",
+      "timestamp": "2024-11-01T16:40:33Z",
+      "source_system": "cyber sensor",
+      "severity": "medium",
+      "description": "Repeated authentication failures on domain controller DC-01 from service account SVC-BACKUP",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "valid_accounts",
+      "mitre_technique": "T1078 - Valid Accounts",
+      "reason": "Service account auth failures \u2014 possible misuse"
+    },
+    {
+      "alert_id": "ALT-019",
+      "timestamp": "2024-11-01T17:11:58Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Firewall rule set updated by network admin \u2014 change ticket CHG-4412 approved",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-020",
+      "timestamp": "2024-11-01T18:03:22Z",
+      "source_system": "intel report",
+      "severity": "high",
+      "description": "Nation-state actor TTPs observed in network traffic matching MITRE ATT&CK T1071 (Application Layer Protocol)",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "application_protocol",
+      "mitre_technique": "T1071 - Application Layer Protocol",
+      "reason": "Nation-state TTP pattern matched in traffic"
+    },
+    {
+      "alert_id": "ALT-021",
+      "timestamp": "2024-11-01T18:55:10Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Disk utilization alert on server SRV-12 \u2014 threshold set too low; adjusted by admin",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-022",
+      "timestamp": "2024-11-01T19:28:47Z",
+      "source_system": "cyber sensor",
+      "severity": "medium",
+      "description": "Suspicious PowerShell execution with encoded command detected on workstation WS-077",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "powershell",
+      "mitre_technique": "T1059.001 - Command and Scripting Interpreter: PowerShell",
+      "reason": "Encoded PowerShell execution is suspicious"
+    },
+    {
+      "alert_id": "ALT-023",
+      "timestamp": "2024-11-01T20:14:03Z",
+      "source_system": "satellite feed",
+      "severity": "low",
+      "description": "Routine satellite pass telemetry received within expected parameters",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-024",
+      "timestamp": "2024-11-01T20:59:31Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Group policy object updated by authorized domain admin \u2014 change logged",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-025",
+      "timestamp": "2024-11-01T21:33:16Z",
+      "source_system": "cyber sensor",
+      "severity": "critical",
+      "description": "Ransomware-like file encryption activity detected on file server FS-02; 1",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "data_exfiltration",
+      "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+      "reason": "Ransomware-like encryption activity detected"
+    },
+    {
+      "alert_id": "ALT-026",
+      "timestamp": "2024-11-01T22:07:44Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "NTP sync event recorded on network appliance \u2014 no anomaly detected",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-027",
+      "timestamp": "2024-11-01T22:41:09Z",
+      "source_system": "intel report",
+      "severity": "high",
+      "description": "Credential dump tool (Mimikatz signature) detected in memory on host 10.3.1.55",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "credential_dumping",
+      "mitre_technique": "T1003 - OS Credential Dumping",
+      "reason": "Mimikatz signature indicates credential dumping"
+    },
+    {
+      "alert_id": "ALT-028",
+      "timestamp": "2024-11-01T23:05:52Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Scheduled task executed on workstation WS-190 \u2014 aligns with patching schedule",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-029",
+      "timestamp": "2024-11-02T00:18:37Z",
+      "source_system": "cyber sensor",
+      "severity": "medium",
+      "description": "Beaconing behavior detected: host 10.5.2.11 makes HTTP GET requests every 60 seconds to 203.0.113.99",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "application_protocol",
+      "mitre_technique": "T1071 - Application Layer Protocol",
+      "reason": "Periodic beaconing behaviour suggests C2 channel"
+    },
+    {
+      "alert_id": "ALT-030",
+      "timestamp": "2024-11-02T01:02:14Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "User account unlocked after standard lockout policy triggered \u2014 no suspicious context",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-031",
+      "timestamp": "2024-11-02T01:47:28Z",
+      "source_system": "satellite feed",
+      "severity": "medium",
+      "description": "Ground station received signal from unregistered satellite frequency \u2014 reported to spectrum team",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-032",
+      "timestamp": "2024-11-02T02:29:05Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Log forwarding agent restarted on collector node COL-06 \u2014 service watchdog triggered",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-033",
+      "timestamp": "2024-11-02T03:11:43Z",
+      "source_system": "cyber sensor",
+      "severity": "high",
+      "description": "Data exfiltration attempt: large archive file transferred to personal cloud storage from classified network segment",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "data_exfiltration",
+      "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+      "reason": "Data exfiltration attempt detected"
+    },
+    {
+      "alert_id": "ALT-034",
+      "timestamp": "2024-11-02T03:58:22Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "SSL inspection bypass allowed for approved video conferencing application \u2014 policy-compliant",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-035",
+      "timestamp": "2024-11-02T04:44:09Z",
+      "source_system": "intel report",
+      "severity": "critical",
+      "description": "Active exploitation of CVE-2024-1234 observed against exposed web application; reverse shell established",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "exploit_public_app",
+      "mitre_technique": "T1190 - Exploit Public-Facing Application",
+      "reason": "Active exploitation of public-facing application"
+    },
+    {
+      "alert_id": "ALT-036",
+      "timestamp": "2024-11-02T05:30:57Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "DHCP lease renewal for printer PR-08 \u2014 normal network event",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-037",
+      "timestamp": "2024-11-02T06:17:34Z",
+      "source_system": "cyber sensor",
+      "severity": "high",
+      "description": "Privilege escalation detected: user jsmith elevated to local admin on WS-133 without change ticket",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "privilege_escalation",
+      "mitre_technique": "T1068 - Exploitation for Privilege Escalation",
+      "reason": "Privilege escalation without change ticket"
+    },
+    {
+      "alert_id": "ALT-038",
+      "timestamp": "2024-11-02T07:03:11Z",
+      "source_system": "SIEM",
+      "severity": "low",
+      "description": "Email quarantine report generated \u2014 12 spam messages blocked",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-039",
+      "timestamp": "2024-11-02T07:49:48Z",
+      "source_system": "satellite feed",
+      "severity": "medium",
+      "description": "Satellite downlink authentication token mismatch \u2014 retry succeeded on second attempt; logged for review",
+      "classification": "false_positive",
+      "confidence": "high",
+      "mitre_label": null,
+      "mitre_technique": null,
+      "reason": "No threat indicators matched; assessed as routine or benign activity."
+    },
+    {
+      "alert_id": "ALT-040",
+      "timestamp": "2024-11-02T08:35:25Z",
+      "source_system": "cyber sensor",
+      "severity": "high",
+      "description": "Unauthorized USB mass storage device connected to air-gapped workstation WS-AG-05 in secure facility",
+      "classification": "real_threat",
+      "confidence": "high",
+      "mitre_label": "usb_exfil",
+      "mitre_technique": "T1052.001 - Exfiltration Over Physical Medium: USB",
+      "reason": "Unauthorized USB device on sensitive system"
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "INC-001",
+      "mitre_label": "application_protocol",
+      "mitre_technique": "T1071 - Application Layer Protocol",
+      "alert_ids": [
+        "ALT-004",
+        "ALT-007",
+        "ALT-020",
+        "ALT-029"
+      ],
+      "alert_count": 4,
+      "severity_max": "critical"
+    },
+    {
+      "incident_id": "INC-002",
+      "mitre_label": "credential_dumping",
+      "mitre_technique": "T1003 - OS Credential Dumping",
+      "alert_ids": [
+        "ALT-027"
+      ],
+      "alert_count": 1,
+      "severity_max": "high"
+    },
+    {
+      "incident_id": "INC-003",
+      "mitre_label": "data_exfiltration",
+      "mitre_technique": "T1041 - Exfiltration Over C2 Channel",
+      "alert_ids": [
+        "ALT-010",
+        "ALT-025",
+        "ALT-033"
+      ],
+      "alert_count": 3,
+      "severity_max": "critical"
+    },
+    {
+      "incident_id": "INC-004",
+      "mitre_label": "exploit_public_app",
+      "mitre_technique": "T1190 - Exploit Public-Facing Application",
+      "alert_ids": [
+        "ALT-016",
+        "ALT-035"
+      ],
+      "alert_count": 2,
+      "severity_max": "critical"
+    },
+    {
+      "incident_id": "INC-005",
+      "mitre_label": "lateral_movement_smb",
+      "mitre_technique": "T1021.002 - Remote Services: SMB/Windows Admin Shares",
+      "alert_ids": [
+        "ALT-013"
+      ],
+      "alert_count": 1,
+      "severity_max": "high"
+    },
+    {
+      "incident_id": "INC-006",
+      "mitre_label": "phishing",
+      "mitre_technique": "T1566 - Phishing",
+      "alert_ids": [
+        "ALT-009"
+      ],
+      "alert_count": 1,
+      "severity_max": "high"
+    },
+    {
+      "incident_id": "INC-007",
+      "mitre_label": "powershell",
+      "mitre_technique": "T1059.001 - Command and Scripting Interpreter: PowerShell",
+      "alert_ids": [
+        "ALT-022"
+      ],
+      "alert_count": 1,
+      "severity_max": "medium"
+    },
+    {
+      "incident_id": "INC-008",
+      "mitre_label": "privilege_escalation",
+      "mitre_technique": "T1068 - Exploitation for Privilege Escalation",
+      "alert_ids": [
+        "ALT-037"
+      ],
+      "alert_count": 1,
+      "severity_max": "high"
+    },
+    {
+      "incident_id": "INC-009",
+      "mitre_label": "usb_exfil",
+      "mitre_technique": "T1052.001 - Exfiltration Over Physical Medium: USB",
+      "alert_ids": [
+        "ALT-040"
+      ],
+      "alert_count": 1,
+      "severity_max": "high"
+    },
+    {
+      "incident_id": "INC-010",
+      "mitre_label": "valid_accounts",
+      "mitre_technique": "T1078 - Valid Accounts",
+      "alert_ids": [
+        "ALT-003",
+        "ALT-018"
+      ],
+      "alert_count": 2,
+      "severity_max": "medium"
+    }
+  ]
+}

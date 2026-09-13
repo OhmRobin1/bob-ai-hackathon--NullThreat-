@@ -1,0 +1,41 @@
+alert_id,timestamp,source_system,severity,description
+ALT-001,2024-11-01T00:12:34Z,SIEM,low,Scheduled backup job completed successfully on server BKP-04
+ALT-002,2024-11-01T01:05:11Z,cyber sensor,low,Port scan detected from internal host 10.4.2.17 — routine vulnerability scan by IT team
+ALT-003,2024-11-01T02:33:47Z,SIEM,medium,Multiple failed SSH login attempts on bastion host from IP 203.0.113.45
+ALT-004,2024-11-01T03:14:02Z,intel report,high,Threat intel feed flags IP 198.51.100.22 as known C2 server; traffic observed from workstation WS-118
+ALT-005,2024-11-01T04:08:55Z,satellite feed,low,Satellite uplink signal anomaly — attributed to scheduled maintenance window
+ALT-006,2024-11-01T05:47:29Z,SIEM,low,User account password reset via self-service portal — routine activity
+ALT-007,2024-11-01T06:22:10Z,cyber sensor,critical,Outbound DNS queries to known DGA domain pattern detected from host 10.2.5.33
+ALT-008,2024-11-01T07:03:58Z,SIEM,low,Antivirus definitions updated on endpoint EP-204 — no threats found
+ALT-009,2024-11-01T08:19:43Z,intel report,high,Phishing email campaign targeting defense contractors detected; two internal users clicked malicious link
+ALT-010,2024-11-01T09:44:17Z,SIEM,medium,Unusual outbound traffic spike (2.3 GB) to external IP 192.0.2.88 from server SRV-07
+ALT-011,2024-11-01T10:05:31Z,cyber sensor,low,TLS certificate renewal detected on web gateway WG-01 — expected activity
+ALT-012,2024-11-01T11:27:09Z,SIEM,low,System log rotation executed on database server DB-03 — routine maintenance
+ALT-013,2024-11-01T12:02:44Z,cyber sensor,high,Lateral movement indicators: SMB enumeration from WS-044 to 14 internal hosts within 3 minutes
+ALT-014,2024-11-01T13:15:22Z,satellite feed,medium,Encrypted satellite telemetry burst outside scheduled window — under investigation
+ALT-015,2024-11-01T14:33:05Z,SIEM,low,New software package installed on workstation WS-201 via approved deployment tool
+ALT-016,2024-11-01T15:08:47Z,intel report,critical,Zero-day exploit for VPN appliance publicly disclosed; unpatched device VPN-02 detected in environment
+ALT-017,2024-11-01T15:52:19Z,SIEM,low,User logged in from approved remote access IP range — normal telework activity
+ALT-018,2024-11-01T16:40:33Z,cyber sensor,medium,Repeated authentication failures on domain controller DC-01 from service account SVC-BACKUP
+ALT-019,2024-11-01T17:11:58Z,SIEM,low,Firewall rule set updated by network admin — change ticket CHG-4412 approved
+ALT-020,2024-11-01T18:03:22Z,intel report,high,Nation-state actor TTPs observed in network traffic matching MITRE ATT&CK T1071 (Application Layer Protocol)
+ALT-021,2024-11-01T18:55:10Z,SIEM,low,Disk utilization alert on server SRV-12 — threshold set too low; adjusted by admin
+ALT-022,2024-11-01T19:28:47Z,cyber sensor,medium,Suspicious PowerShell execution with encoded command detected on workstation WS-077
+ALT-023,2024-11-01T20:14:03Z,satellite feed,low,Routine satellite pass telemetry received within expected parameters
+ALT-024,2024-11-01T20:59:31Z,SIEM,low,Group policy object updated by authorized domain admin — change logged
+ALT-025,2024-11-01T21:33:16Z,cyber sensor,critical,Ransomware-like file encryption activity detected on file server FS-02; 1,200 files renamed in 60 seconds
+ALT-026,2024-11-01T22:07:44Z,SIEM,low,NTP sync event recorded on network appliance — no anomaly detected
+ALT-027,2024-11-01T22:41:09Z,intel report,high,Credential dump tool (Mimikatz signature) detected in memory on host 10.3.1.55
+ALT-028,2024-11-01T23:05:52Z,SIEM,low,Scheduled task executed on workstation WS-190 — aligns with patching schedule
+ALT-029,2024-11-02T00:18:37Z,cyber sensor,medium,Beaconing behavior detected: host 10.5.2.11 makes HTTP GET requests every 60 seconds to 203.0.113.99
+ALT-030,2024-11-02T01:02:14Z,SIEM,low,User account unlocked after standard lockout policy triggered — no suspicious context
+ALT-031,2024-11-02T01:47:28Z,satellite feed,medium,Ground station received signal from unregistered satellite frequency — reported to spectrum team
+ALT-032,2024-11-02T02:29:05Z,SIEM,low,Log forwarding agent restarted on collector node COL-06 — service watchdog triggered
+ALT-033,2024-11-02T03:11:43Z,cyber sensor,high,Data exfiltration attempt: large archive file transferred to personal cloud storage from classified network segment
+ALT-034,2024-11-02T03:58:22Z,SIEM,low,SSL inspection bypass allowed for approved video conferencing application — policy-compliant
+ALT-035,2024-11-02T04:44:09Z,intel report,critical,Active exploitation of CVE-2024-1234 observed against exposed web application; reverse shell established
+ALT-036,2024-11-02T05:30:57Z,SIEM,low,DHCP lease renewal for printer PR-08 — normal network event
+ALT-037,2024-11-02T06:17:34Z,cyber sensor,high,Privilege escalation detected: user jsmith elevated to local admin on WS-133 without change ticket
+ALT-038,2024-11-02T07:03:11Z,SIEM,low,Email quarantine report generated — 12 spam messages blocked, no malicious attachments
+ALT-039,2024-11-02T07:49:48Z,satellite feed,medium,Satellite downlink authentication token mismatch — retry succeeded on second attempt; logged for review
+ALT-040,2024-11-02T08:35:25Z,cyber sensor,high,Unauthorized USB mass storage device connected to air-gapped workstation WS-AG-05 in secure facility
