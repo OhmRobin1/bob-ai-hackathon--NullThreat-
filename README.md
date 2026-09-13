@@ -118,7 +118,7 @@ python src/generate_report.py
 
 ## 🏅 What We're Most Proud Of
 
-Tell the judges what part of your submission is strongest and worth paying close attention to.
+Getting opportunity to represent our solution idea using IBM BOB AI.
 
 ---
 
