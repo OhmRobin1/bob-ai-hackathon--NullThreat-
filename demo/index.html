@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NullThreat — AI Threat Intelligence Dashboard</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:#0a0e1a;color:#c9d1d9;min-height:100vh}
+
+  /* ── TOP BAR ── */
+  .topbar{background:#0d1117;border-bottom:1px solid #21262d;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .topbar-left{display:flex;align-items:center;gap:14px}
+  .logo{font-size:18px;font-weight:700;color:#f0f6fc;letter-spacing:1px}
+  .logo span{color:#e05252}
+  .tagline{font-size:11px;color:#8b949e;letter-spacing:.5px;text-transform:uppercase}
+  .status-pill{display:flex;align-items:center;gap:6px;background:#1a2a1a;border:1px solid #2ea043;border-radius:20px;padding:4px 12px;font-size:11px;color:#3fb950}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* ── LAYOUT ── */
+  .main{max-width:1280px;margin:0 auto;padding:24px 28px}
+
+  /* ── BLUF BANNER ── */
+  .bluf{background:linear-gradient(135deg,#1a0a0a 0%,#2a0f0f 100%);border:1px solid #6e1818;border-left:4px solid #e05252;border-radius:8px;padding:20px 24px;margin-bottom:24px}
+  .bluf-label{font-size:10px;font-weight:700;color:#e05252;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+  .bluf-text{font-size:14px;color:#f0f6fc;line-height:1.7}
+  .bluf-text strong{color:#e05252}
+
+  /* ── STAT CARDS ── */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .stat-card{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:20px;text-align:center}
+  .stat-card.critical{border-top:3px solid #e05252}
+  .stat-card.threat{border-top:3px solid #f0883e}
+  .stat-card.safe{border-top:3px solid #3fb950}
+  .stat-card.incident{border-top:3px solid #a371f7}
+  .stat-num{font-size:36px;font-weight:700;line-height:1}
+  .stat-num.critical{color:#e05252}
+  .stat-num.threat{color:#f0883e}
+  .stat-num.safe{color:#3fb950}
+  .stat-num.incident{color:#a371f7}
+  .stat-label{font-size:11px;color:#8b949e;margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+
+  /* ── CHARTS ROW ── */
+  .charts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+  .chart-card{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:20px}
+  .chart-title{font-size:12px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600}
+
+  /* SVG donut */
+  .donut-wrap{display:flex;align-items:center;gap:20px}
+  .donut-legend{display:flex;flex-direction:column;gap:8px;flex:1}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+  .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+  /* bar chart */
+  .bar-chart{display:flex;flex-direction:column;gap:10px}
+  .bar-row{display:flex;align-items:center;gap:10px}
+  .bar-label{font-size:11px;color:#8b949e;width:110px;text-align:right;flex-shrink:0}
+  .bar-track{flex:1;background:#21262d;border-radius:4px;height:16px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+  .bar-val{font-size:11px;color:#8b949e;width:20px}
+
+  /* source bars */
+  .src-chart{display:flex;flex-direction:column;gap:10px}
+
+  /* ── SECTION HEADER ── */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .section-title{font-size:13px;font-weight:700;color:#f0f6fc;text-transform:uppercase;letter-spacing:.8px}
+  .badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600}
+  .badge-red{background:#3d1c1c;color:#e05252;border:1px solid #6e1818}
+  .badge-green{background:#1a2e1a;color:#3fb950;border:1px solid #1d4024}
+  .badge-purple{background:#1f1435;color:#a371f7;border:1px solid #3d2a6e}
+
+  /* ── FILTER BAR ── */
+  .filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .filter-btn{background:#161b22;border:1px solid #30363d;color:#8b949e;padding:5px 14px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .2s}
+  .filter-btn:hover,.filter-btn.active{background:#21262d;color:#f0f6fc;border-color:#8b949e}
+  .filter-btn.f-critical.active{background:#3d1c1c;color:#e05252;border-color:#6e1818}
+  .filter-btn.f-high.active{background:#2d1e0e;color:#f0883e;border-color:#6e3810}
+  .filter-btn.f-medium.active{background:#2d2a0e;color:#e3b341;border-color:#6e6010}
+  .filter-btn.f-low.active{background:#1a2e1a;color:#3fb950;border-color:#1d4024}
+
+  /* ── ALERTS TABLE ── */
+  .table-wrap{background:#0d1117;border:1px solid #21262d;border-radius:8px;overflow:hidden;margin-bottom:24px}
+  table{width:100%;border-collapse:collapse}
+  thead{background:#161b22}
+  th{padding:10px 14px;text-align:left;font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;font-weight:600;white-space:nowrap}
+  td{padding:10px 14px;font-size:12px;border-top:1px solid #21262d;vertical-align:middle}
+  tr:hover td{background:#161b22}
+  .sev-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase}
+  .sev-critical{background:#3d1c1c;color:#e05252}
+  .sev-high{background:#2d1e0e;color:#f0883e}
+  .sev-medium{background:#2d2a0e;color:#e3b341}
+  .sev-low{background:#1a2e1a;color:#3fb950}
+  .cls-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+  .cls-threat{background:#3d1c1c;color:#e05252}
+  .cls-fp{background:#161b22;color:#8b949e}
+  .mitre-tag{font-size:10px;color:#79c0ff;background:#0d2137;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .desc-cell{max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c9d1d9}
+  .source-tag{font-size:10px;padding:2px 7px;border-radius:4px;white-space:nowrap}
+  .src-siem{background:#1a1a2e;color:#79c0ff}
+  .src-cyber{background:#1a2e1a;color:#56d364}
+  .src-intel{background:#2d1e0e;color:#f0883e}
+  .src-sat{background:#1f1435;color:#a371f7}
+
+  /* ── INCIDENTS GRID ── */
+  .incidents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:24px}
+  .inc-card{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:16px;border-left:3px solid #21262d}
+  .inc-card.sev-c{border-left-color:#e05252}
+  .inc-card.sev-h{border-left-color:#f0883e}
+  .inc-card.sev-m{border-left-color:#e3b341}
+  .inc-id{font-size:11px;color:#8b949e;font-weight:600;margin-bottom:6px}
+  .inc-technique{font-size:12px;color:#79c0ff;margin-bottom:10px;font-weight:600;line-height:1.4}
+  .inc-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .inc-count{font-size:20px;font-weight:700;color:#f0f6fc}
+  .inc-count-label{font-size:10px;color:#8b949e}
+  .inc-alerts{display:flex;flex-wrap:wrap;gap:5px}
+  .inc-alert-tag{font-size:10px;background:#161b22;color:#8b949e;padding:2px 7px;border-radius:4px;border:1px solid #30363d}
+
+  /* ── PIPELINE SECTION ── */
+  .pipeline{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:20px;margin-bottom:24px}
+  .pipeline-steps{display:flex;align-items:center;gap:0;overflow-x:auto;padding:8px 0}
+  .pipeline-step{display:flex;flex-direction:column;align-items:center;min-width:130px}
+  .step-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px 16px;text-align:center;width:120px}
+  .step-icon{font-size:20px;margin-bottom:6px}
+  .step-name{font-size:11px;color:#f0f6fc;font-weight:600}
+  .step-sub{font-size:10px;color:#8b949e;margin-top:3px}
+  .step-arrow{color:#30363d;font-size:20px;margin:0 4px;flex-shrink:0;align-self:center;padding-bottom:20px}
+
+  /* ── SEARCH ── */
+  .search-wrap{position:relative;margin-bottom:14px}
+  .search-input{width:100%;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px 14px 8px 36px;color:#c9d1d9;font-size:12px;outline:none}
+  .search-input:focus{border-color:#388bfd}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#8b949e;font-size:13px}
+
+  /* ── TABS ── */
+  .tabs{display:flex;gap:0;border-bottom:1px solid #21262d;margin-bottom:20px}
+  .tab{padding:10px 20px;font-size:12px;color:#8b949e;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+  .tab:hover{color:#c9d1d9}
+  .tab.active{color:#f0f6fc;border-bottom-color:#388bfd}
+
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+
+  /* ── FOOTER ── */
+  .footer{text-align:center;padding:24px;color:#484f58;font-size:11px;border-top:1px solid #21262d;margin-top:8px}
+
+  /* responsive */
+  @media(max-width:900px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .charts-row{grid-template-columns:1fr}
+    .pipeline-steps{flex-wrap:nowrap}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="logo"><span>NULL</span>THREAT</div>
+      <div class="tagline">AI Threat Intelligence Platform</div>
+    </div>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    Pipeline Active &nbsp;|&nbsp; 40 alerts processed &nbsp;|&nbsp; 2024-11-02
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+    <div class="tab" onclick="switchTab('alerts')">All Alerts</div>
+    <div class="tab" onclick="switchTab('incidents')">Incident Groups</div>
+    <div class="tab" onclick="switchTab('pipeline')">How It Works</div>
+  </div>
+
+  <!-- ═══════════════════ TAB: DASHBOARD ═══════════════════ -->
+  <div id="tab-dashboard" class="tab-content active">
+
+    <!-- BLUF -->
+    <div class="bluf">
+      <div class="bluf-label">⚡ Bottom Line Up Front (BLUF)</div>
+      <div class="bluf-text">
+        Of <strong>40 alerts</strong> analysed, <strong>17 confirmed threats</strong> were identified across
+        <strong>10 incident groups</strong>, with the highest severity reaching <strong>CRITICAL</strong>.
+        The most significant cluster involves <strong>4 correlated alerts</strong> mapped to
+        <strong>T1071 – Application Layer Protocol</strong> (C2 beaconing / nation-state TTPs).
+        <strong>Immediate analyst review and response is required.</strong>
+        The remaining 23 alerts were assessed as false positives and discarded.
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats">
+      <div class="stat-card critical">
+        <div class="stat-num critical">4</div>
+        <div class="stat-label">Critical Threats</div>
+      </div>
+      <div class="stat-card threat">
+        <div class="stat-num threat">17</div>
+        <div class="stat-label">Confirmed Threats</div>
+      </div>
+      <div class="stat-card safe">
+        <div class="stat-num safe">23</div>
+        <div class="stat-label">False Positives</div>
+      </div>
+      <div class="stat-card incident">
+        <div class="stat-num incident">10</div>
+        <div class="stat-label">Incident Groups</div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="charts-row">
+
+      <!-- Donut: Classification split -->
+      <div class="chart-card">
+        <div class="chart-title">Classification Split</div>
+        <div class="donut-wrap">
+          <svg width="100" height="100" viewBox="0 0 36 36">
+            <!-- false positive: 23/40 = 207° -->
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#21262d" stroke-width="4"/>
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e05252" stroke-width="4"
+              stroke-dasharray="42.5 57.5" stroke-dashoffset="25" transform="rotate(-90 18 18)"/>
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#3fb950" stroke-width="4"
+              stroke-dasharray="57.5 42.5" stroke-dashoffset="-42.5" transform="rotate(-90 18 18)"/>
+            <text x="18" y="20" text-anchor="middle" font-size="7" fill="#f0f6fc" font-weight="700">42%</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#e05252"></div><span>Real Threats: 17</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div><span>False Positives: 23</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar: Severity breakdown of threats -->
+      <div class="chart-card">
+        <div class="chart-title">Threat Severity Breakdown</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-label">CRITICAL</div>
+            <div class="bar-track"><div class="bar-fill" style="width:23.5%;background:#e05252"></div></div>
+            <div class="bar-val">4</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">HIGH</div>
+            <div class="bar-track"><div class="bar-fill" style="width:47%;background:#f0883e"></div></div>
+            <div class="bar-val">8</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">MEDIUM</div>
+            <div class="bar-track"><div class="bar-fill" style="width:29.4%;background:#e3b341"></div></div>
+            <div class="bar-val">5</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">LOW</div>
+            <div class="bar-track"><div class="bar-fill" style="width:0%;background:#3fb950"></div></div>
+            <div class="bar-val">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar: Top MITRE techniques -->
+      <div class="chart-card">
+        <div class="chart-title">Top MITRE Techniques</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-label">T1071 C2 Protocol</div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:#79c0ff"></div></div>
+            <div class="bar-val">4</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">T1041 Exfiltration</div>
+            <div class="bar-track"><div class="bar-fill" style="width:75%;background:#79c0ff"></div></div>
+            <div class="bar-val">3</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">T1190 Exploit App</div>
+            <div class="bar-track"><div class="bar-fill" style="width:50%;background:#79c0ff"></div></div>
+            <div class="bar-val">2</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">T1078 Valid Accts</div>
+            <div class="bar-track"><div class="bar-fill" style="width:50%;background:#79c0ff"></div></div>
+            <div class="bar-val">2</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">T1003 Cred Dump</div>
+            <div class="bar-track"><div class="bar-fill" style="width:25%;background:#79c0ff"></div></div>
+            <div class="bar-val">1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP THREATS QUICK VIEW -->
+    <div class="section-header">
+      <div class="section-title">Critical &amp; High Threats</div>
+      <span class="badge badge-red">12 alerts</span>
+    </div>
+    <div class="table-wrap" style="margin-bottom:24px">
+      <table id="top-threats-table">
+        <thead>
+          <tr>
+            <th>Alert ID</th><th>Timestamp</th><th>Source</th><th>Severity</th><th>MITRE Technique</th><th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="top-threats-body"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /tab-dashboard -->
+
+  <!-- ═══════════════════ TAB: ALL ALERTS ═══════════════════ -->
+  <div id="tab-alerts" class="tab-content">
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input class="search-input" id="search-input" placeholder="Search alerts by ID, description, source, MITRE technique..." oninput="filterAlerts()">
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All (40)</button>
+      <button class="filter-btn" onclick="setFilter('real_threat',this)">Threats (17)</button>
+      <button class="filter-btn" onclick="setFilter('false_positive',this)">False Positives (23)</button>
+      <button class="filter-btn f-critical" onclick="setFilter('critical',this)">Critical (4)</button>
+      <button class="filter-btn f-high" onclick="setFilter('high',this)">High (8)</button>
+      <button class="filter-btn f-medium" onclick="setFilter('medium',this)">Medium (5)</button>
+      <button class="filter-btn f-low" onclick="setFilter('low',this)">Low (23)</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Alert ID</th><th>Timestamp</th><th>Source</th><th>Severity</th><th>Classification</th><th>MITRE Technique</th><th>Description</th><th>Reason</th>
+          </tr>
+        </thead>
+        <tbody id="alerts-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TAB: INCIDENTS ═══════════════════ -->
+  <div id="tab-incidents" class="tab-content">
+    <div class="section-header" style="margin-bottom:20px">
+      <div class="section-title">Correlated Incident Groups</div>
+      <span class="badge badge-purple">10 incidents</span>
+    </div>
+    <div class="incidents-grid" id="incidents-grid"></div>
+  </div>
+
+  <!-- ═══════════════════ TAB: PIPELINE ═══════════════════ -->
+  <div id="tab-pipeline" class="tab-content">
+    <div class="pipeline">
+      <div class="chart-title" style="margin-bottom:20px">NullThreat AI Pipeline — Data Flow</div>
+      <div class="pipeline-steps">
+        <div class="pipeline-step">
+          <div class="step-box">
+            <div class="step-icon">📄</div>
+            <div class="step-name">alerts.csv</div>
+            <div class="step-sub">40 security alerts</div>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="pipeline-step">
+          <div class="step-box">
+            <div class="step-icon">🔍</div>
+            <div class="step-name">Classifier</div>
+            <div class="step-sub">Rule-based / LLM</div>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="pipeline-step">
+          <div class="step-box">
+            <div class="step-icon">🛡️</div>
+            <div class="step-name">MITRE Mapper</div>
+            <div class="step-sub">10 ATT&amp;CK techniques</div>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="pipeline-step">
+          <div class="step-box">
+            <div class="step-icon">🔗</div>
+            <div class="step-name">Correlator</div>
+            <div class="step-sub">Group by technique</div>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="pipeline-step">
+          <div class="step-box">
+            <div class="step-icon">📊</div>
+            <div class="step-name">results.json</div>
+            <div class="step-sub">Machine output</div>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="pipeline-step">
+          <div class="step-box">
+            <div class="step-icon">📋</div>
+            <div class="step-name">BLUF Report</div>
+            <div class="step-sub">Analyst-ready MD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row" style="margin-bottom:24px">
+      <div class="chart-card">
+        <div class="chart-title">Scripts</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12px">
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:12px">
+            <div style="color:#79c0ff;font-weight:700;margin-bottom:4px">classify_alerts.py</div>
+            <div style="color:#8b949e">Reads CSV → classifies each alert → maps to MITRE → correlates incidents → writes results.json</div>
+          </div>
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:12px">
+            <div style="color:#3fb950;font-weight:700;margin-bottom:4px">generate_report.py</div>
+            <div style="color:#8b949e">Reads results.json → builds BLUF Markdown report → writes bluf_report.md</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Modes</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12px">
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:12px">
+            <div style="color:#e3b341;font-weight:700;margin-bottom:4px">Demo Mode (default)</div>
+            <div style="color:#8b949e">25-rule keyword engine. Fully offline. No API key needed. Runs instantly.</div>
+          </div>
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:12px">
+            <div style="color:#a371f7;font-weight:700;margin-bottom:4px">Watsonx Mode</div>
+            <div style="color:#8b949e">IBM watsonx.ai · Llama-3-70b-Instruct · Zero-shot classification. Set CLASSIFY_MODE=watsonx in .env</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">MITRE ATT&amp;CK Coverage</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:11px">
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1566</span><span style="color:#c9d1d9">Phishing</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1078</span><span style="color:#c9d1d9">Valid Accounts</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1071</span><span style="color:#c9d1d9">Application Layer Protocol</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1021.002</span><span style="color:#c9d1d9">SMB Lateral Movement</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1003</span><span style="color:#c9d1d9">OS Credential Dumping</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1059.001</span><span style="color:#c9d1d9">PowerShell</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1041</span><span style="color:#c9d1d9">Exfiltration Over C2</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1052.001</span><span style="color:#c9d1d9">USB Exfiltration</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1190</span><span style="color:#c9d1d9">Exploit Public-Facing App</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#161b22;border-radius:4px"><span style="color:#79c0ff">T1068</span><span style="color:#c9d1d9">Privilege Escalation</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="footer">NullThreat · IBM Bob AI Hackathon · Built with IBM watsonx.ai &nbsp;|&nbsp; Made with IBM Bob</div>
+
+<script>
+// ── DATA (embedded from results.json) ──────────────────────────────────────
+const ALERTS = [
+  {id:"ALT-001",ts:"2024-11-01T00:12",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Scheduled backup job completed successfully on server BKP-04",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-002",ts:"2024-11-01T01:05",src:"cyber sensor",sev:"low",cls:"false_positive",mitre:null,desc:"Port scan detected from internal host 10.4.2.17 — routine vulnerability scan by IT team",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-003",ts:"2024-11-01T02:33",src:"SIEM",sev:"medium",cls:"real_threat",mitre:"T1078 - Valid Accounts",desc:"Multiple failed SSH login attempts on bastion host from IP 203.0.113.45",reason:"Repeated SSH failures suggest brute-force attempt"},
+  {id:"ALT-004",ts:"2024-11-01T03:14",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Threat intel feed flags IP 198.51.100.22 as known C2 server; traffic observed from workstation WS-118",reason:"Traffic to known C2 server detected"},
+  {id:"ALT-005",ts:"2024-11-01T04:08",src:"satellite feed",sev:"low",cls:"false_positive",mitre:null,desc:"Satellite uplink signal anomaly — attributed to scheduled maintenance window",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-006",ts:"2024-11-01T05:47",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"User account password reset via self-service portal — routine activity",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-007",ts:"2024-11-01T06:22",src:"cyber sensor",sev:"critical",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Outbound DNS queries to known DGA domain pattern detected from host 10.2.5.33",reason:"DGA domain pattern indicates C2 beaconing"},
+  {id:"ALT-008",ts:"2024-11-01T07:03",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Antivirus definitions updated on endpoint EP-204 — no threats found",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-009",ts:"2024-11-01T08:19",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1566 - Phishing",desc:"Phishing email campaign targeting defense contractors detected; two internal users clicked malicious link",reason:"Phishing campaign or click-through detected"},
+  {id:"ALT-010",ts:"2024-11-01T09:44",src:"SIEM",sev:"medium",cls:"real_threat",mitre:"T1041 - Exfiltration Over C2 Channel",desc:"Unusual outbound traffic spike (2.3 GB) to external IP 192.0.2.88 from server SRV-07",reason:"Anomalous outbound volume to external IP"},
+  {id:"ALT-011",ts:"2024-11-01T10:05",src:"cyber sensor",sev:"low",cls:"false_positive",mitre:null,desc:"TLS certificate renewal detected on web gateway WG-01 — expected activity",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-012",ts:"2024-11-01T11:27",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"System log rotation executed on database server DB-03 — routine maintenance",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-013",ts:"2024-11-01T12:02",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1021.002 - Remote Services: SMB/Windows Admin Shares",desc:"Lateral movement indicators: SMB enumeration from WS-044 to 14 internal hosts within 3 minutes",reason:"SMB-based lateral movement across internal hosts"},
+  {id:"ALT-014",ts:"2024-11-01T13:15",src:"satellite feed",sev:"medium",cls:"false_positive",mitre:null,desc:"Encrypted satellite telemetry burst outside scheduled window — under investigation",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-015",ts:"2024-11-01T14:33",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"New software package installed on workstation WS-201 via approved deployment tool",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-016",ts:"2024-11-01T15:08",src:"intel report",sev:"critical",cls:"real_threat",mitre:"T1190 - Exploit Public-Facing Application",desc:"Zero-day exploit for VPN appliance publicly disclosed; unpatched device VPN-02 detected in environment",reason:"Unpatched device vulnerable to disclosed zero-day"},
+  {id:"ALT-017",ts:"2024-11-01T15:52",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"User logged in from approved remote access IP range — normal telework activity",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-018",ts:"2024-11-01T16:40",src:"cyber sensor",sev:"medium",cls:"real_threat",mitre:"T1078 - Valid Accounts",desc:"Repeated authentication failures on domain controller DC-01 from service account SVC-BACKUP",reason:"Service account auth failures — possible misuse"},
+  {id:"ALT-019",ts:"2024-11-01T17:11",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Firewall rule set updated by network admin — change ticket CHG-4412 approved",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-020",ts:"2024-11-01T18:03",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Nation-state actor TTPs observed in network traffic matching MITRE ATT&CK T1071",reason:"Nation-state TTP pattern matched in traffic"},
+  {id:"ALT-021",ts:"2024-11-01T18:55",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Disk utilization alert on server SRV-12 — threshold set too low; adjusted by admin",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-022",ts:"2024-11-01T19:28",src:"cyber sensor",sev:"medium",cls:"real_threat",mitre:"T1059.001 - Command and Scripting Interpreter: PowerShell",desc:"Suspicious PowerShell execution with encoded command detected on workstation WS-077",reason:"Encoded PowerShell execution is suspicious"},
+  {id:"ALT-023",ts:"2024-11-01T20:14",src:"satellite feed",sev:"low",cls:"false_positive",mitre:null,desc:"Routine satellite pass telemetry received within expected parameters",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-024",ts:"2024-11-01T20:59",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Group policy object updated by authorized domain admin — change logged",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-025",ts:"2024-11-01T21:33",src:"cyber sensor",sev:"critical",cls:"real_threat",mitre:"T1041 - Exfiltration Over C2 Channel",desc:"Ransomware-like file encryption activity detected on file server FS-02; 1,200 files renamed in 60 seconds",reason:"Ransomware-like encryption activity detected"},
+  {id:"ALT-026",ts:"2024-11-01T22:07",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"NTP sync event recorded on network appliance — no anomaly detected",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-027",ts:"2024-11-01T22:41",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1003 - OS Credential Dumping",desc:"Credential dump tool (Mimikatz signature) detected in memory on host 10.3.1.55",reason:"Mimikatz signature indicates credential dumping"},
+  {id:"ALT-028",ts:"2024-11-01T23:05",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Scheduled task executed on workstation WS-190 — aligns with patching schedule",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-029",ts:"2024-11-02T00:18",src:"cyber sensor",sev:"medium",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Beaconing behavior detected: host 10.5.2.11 makes HTTP GET requests every 60 seconds to 203.0.113.99",reason:"Periodic beaconing behaviour suggests C2 channel"},
+  {id:"ALT-030",ts:"2024-11-02T01:02",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"User account unlocked after standard lockout policy triggered — no suspicious context",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-031",ts:"2024-11-02T01:47",src:"satellite feed",sev:"medium",cls:"false_positive",mitre:null,desc:"Ground station received signal from unregistered satellite frequency — reported to spectrum team",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-032",ts:"2024-11-02T02:29",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Log forwarding agent restarted on collector node COL-06 — service watchdog triggered",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-033",ts:"2024-11-02T03:11",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1041 - Exfiltration Over C2 Channel",desc:"Data exfiltration attempt: large archive file transferred to personal cloud storage from classified network segment",reason:"Data exfiltration attempt detected"},
+  {id:"ALT-034",ts:"2024-11-02T03:58",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"SSL inspection bypass allowed for approved video conferencing application — policy-compliant",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-035",ts:"2024-11-02T04:44",src:"intel report",sev:"critical",cls:"real_threat",mitre:"T1190 - Exploit Public-Facing Application",desc:"Active exploitation of CVE-2024-1234 observed against exposed web application; reverse shell established",reason:"Active exploitation of public-facing application"},
+  {id:"ALT-036",ts:"2024-11-02T05:30",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"DHCP lease renewal for printer PR-08 — normal network event",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-037",ts:"2024-11-02T06:17",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1068 - Exploitation for Privilege Escalation",desc:"Privilege escalation detected: user jsmith elevated to local admin on WS-133 without change ticket",reason:"Privilege escalation without change ticket"},
+  {id:"ALT-038",ts:"2024-11-02T07:03",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Email quarantine report generated — 12 spam messages blocked, no malicious attachments",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-039",ts:"2024-11-02T07:49",src:"satellite feed",sev:"medium",cls:"false_positive",mitre:null,desc:"Satellite downlink authentication token mismatch — retry succeeded on second attempt; logged for review",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-040",ts:"2024-11-02T08:35",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1052.001 - Exfiltration Over Physical Medium: USB",desc:"Unauthorized USB mass storage device connected to air-gapped workstation WS-AG-05 in secure facility",reason:"Unauthorized USB device on sensitive system"}
+];
+
+const INCIDENTS = [
+  {id:"INC-001",technique:"T1071 - Application Layer Protocol",alerts:["ALT-004","ALT-007","ALT-020","ALT-029"],count:4,sev:"critical"},
+  {id:"INC-002",technique:"T1003 - OS Credential Dumping",alerts:["ALT-027"],count:1,sev:"high"},
+  {id:"INC-003",technique:"T1041 - Exfiltration Over C2 Channel",alerts:["ALT-010","ALT-025","ALT-033"],count:3,sev:"critical"},
+  {id:"INC-004",technique:"T1190 - Exploit Public-Facing Application",alerts:["ALT-016","ALT-035"],count:2,sev:"critical"},
+  {id:"INC-005",technique:"T1021.002 - Remote Services: SMB/Windows Admin Shares",alerts:["ALT-013"],count:1,sev:"high"},
+  {id:"INC-006",technique:"T1566 - Phishing",alerts:["ALT-009"],count:1,sev:"high"},
+  {id:"INC-007",technique:"T1059.001 - Command and Scripting Interpreter: PowerShell",alerts:["ALT-022"],count:1,sev:"medium"},
+  {id:"INC-008",technique:"T1068 - Exploitation for Privilege Escalation",alerts:["ALT-037"],count:1,sev:"high"},
+  {id:"INC-009",technique:"T1052.001 - Exfiltration Over Physical Medium: USB",alerts:["ALT-040"],count:1,sev:"high"},
+  {id:"INC-010",technique:"T1078 - Valid Accounts",alerts:["ALT-003","ALT-018"],count:2,sev:"medium"}
+];
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function srcClass(s){
+  if(s==="SIEM") return "src-siem";
+  if(s==="cyber sensor") return "src-cyber";
+  if(s==="intel report") return "src-intel";
+  return "src-sat";
+}
+function sevLabel(s){
+  const m={critical:"sev-critical",high:"sev-high",medium:"sev-medium",low:"sev-low"};
+  return m[s]||"sev-low";
+}
+
+// ── RENDER TOP THREATS TABLE ───────────────────────────────────────────────
+(function(){
+  const tb = document.getElementById("top-threats-body");
+  const topAlerts = ALERTS.filter(a=>a.cls==="real_threat"&&(a.sev==="critical"||a.sev==="high"));
+  topAlerts.forEach(a=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td style="font-weight:600;color:#f0f6fc">${a.id}</td>
+      <td style="color:#8b949e">${a.ts}</td>
+      <td><span class="source-tag ${srcClass(a.src)}">${a.src}</span></td>
+      <td><span class="sev-badge ${sevLabel(a.sev)}">${a.sev}</span></td>
+      <td>${a.mitre?`<span class="mitre-tag">${a.mitre}</span>`:'—'}</td>
+      <td class="desc-cell" title="${a.desc}">${a.desc}</td>`;
+    tb.appendChild(tr);
+  });
+})();
+
+// ── RENDER ALL ALERTS TABLE ────────────────────────────────────────────────
+let currentFilter="all";
+function renderAlerts(list){
+  const tb=document.getElementById("alerts-body");
+  tb.innerHTML="";
+  list.forEach(a=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td style="font-weight:600;color:#f0f6fc">${a.id}</td>
+      <td style="color:#8b949e">${a.ts}</td>
+      <td><span class="source-tag ${srcClass(a.src)}">${a.src}</span></td>
+      <td><span class="sev-badge ${sevLabel(a.sev)}">${a.sev}</span></td>
+      <td><span class="cls-badge ${a.cls==='real_threat'?'cls-threat':'cls-fp'}">${a.cls==='real_threat'?'THREAT':'FALSE POS'}</span></td>
+      <td>${a.mitre?`<span class="mitre-tag">${a.mitre}</span>`:'<span style="color:#484f58">—</span>'}</td>
+      <td class="desc-cell" title="${a.desc}">${a.desc}</td>
+      <td style="font-size:11px;color:#8b949e;max-width:200px">${a.reason}</td>`;
+    tb.appendChild(tr);
+  });
+}
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active","f-critical","f-high","f-medium","f-low"));
+  btn.classList.add("active");
+  if(f==="critical"||f==="high"||f==="medium"||f==="low") btn.classList.add("f-"+f);
+  filterAlerts();
+}
+function filterAlerts(){
+  const q=(document.getElementById("search-input").value||"").toLowerCase();
+  let list=ALERTS;
+  if(currentFilter==="real_threat") list=list.filter(a=>a.cls==="real_threat");
+  else if(currentFilter==="false_positive") list=list.filter(a=>a.cls==="false_positive");
+  else if(["critical","high","medium","low"].includes(currentFilter)) list=list.filter(a=>a.sev===currentFilter);
+  if(q) list=list.filter(a=>
+    a.id.toLowerCase().includes(q)||
+    a.desc.toLowerCase().includes(q)||
+    a.src.toLowerCase().includes(q)||
+    (a.mitre&&a.mitre.toLowerCase().includes(q))||
+    a.reason.toLowerCase().includes(q)
+  );
+  renderAlerts(list);
+}
+renderAlerts(ALERTS);
+
+// ── RENDER INCIDENTS GRID ──────────────────────────────────────────────────
+(function(){
+  const grid=document.getElementById("incidents-grid");
+  const sevMap={critical:"sev-c",high:"sev-h",medium:"sev-m"};
+  const sevBadge={critical:"sev-critical",high:"sev-high",medium:"sev-medium"};
+  INCIDENTS.forEach(inc=>{
+    const card=document.createElement("div");
+    card.className=`inc-card ${sevMap[inc.sev]||"sev-m"}`;
+    card.innerHTML=`
+      <div class="inc-id">${inc.id}</div>
+      <div class="inc-technique">${inc.technique}</div>
+      <div class="inc-meta">
+        <div><div class="inc-count">${inc.count}</div><div class="inc-count-label">Alert${inc.count>1?'s':''}</div></div>
+        <span class="sev-badge ${sevBadge[inc.sev]||'sev-medium'}">${inc.sev.toUpperCase()}</span>
+      </div>
+      <div class="inc-alerts">${inc.alerts.map(a=>`<span class="inc-alert-tag">${a}</span>`).join("")}</div>`;
+    grid.appendChild(card);
+  });
+})();
+
+// ── TAB SWITCHER ──────────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll(".tab-content").forEach(el=>el.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(el=>el.classList.remove("active"));
+  document.getElementById("tab-"+name).classList.add("active");
+  event.target.classList.add("active");
+}
+</script>
+</body>
+</html>
