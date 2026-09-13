@@ -1,4 +1,4 @@
-# 🚀 [Your Project Title Here]
+# 🚀 [NullThreat]
 
 > ⚠️ **Replace everything in `[ ]` brackets with your actual content before submission.**
 
@@ -8,10 +8,10 @@
 
 | Field | Value |
 |---|---|
-| **Team Name** | [Your Team Name] |
-| **Track** | [AI / DevOps / Sustainability / Open] |
-| **Team Lead** | [Name] — [email@ibm.com] |
-| **Members** | [Name 1], [Name 2], [Name 3] |
+| **Team Name** | [NullThreat] |
+| **Track** | [AI] |
+| **Team Lead** | [Bhargav Paragkumar Jagtap] — [26cs031@charusat.edu.in] |
+| **Members** | [Milonee Shah], [Saumya Jain], [Ohm Soman] |
 
 ---
 
@@ -19,7 +19,10 @@
 
 > In 2–3 sentences: What problem does your project solve? Who experiences this problem?
 
-[Describe the real-world problem your project addresses. Be specific about who the user is and what pain point they face.]
+[Defence analysts face thousands of alerts from different sources,
+making it difficult to identify genuine threats while filtering out false positives.
+The solution prioritizes critical threats and generate clear BLUF (Bottom Line Up Front)
+summaries so commanders can quickly understand the situation and take action.]
 
 ---
 
@@ -27,16 +30,16 @@
 
 > In 2–3 sentences: What did you build? How does it solve the problem above?
 
-[Describe your solution clearly. Explain the core mechanism — what makes it work.]
+[The solution prioritizes genuine and critical threats while filtering out false positives from thousands of alerts. It generates clear BLUF summaries to help commanders quickly understand threats and make informed decisions.]
 
 ---
 
 ## ✨ Key Features
 
-- **Feature 1:** [Brief description — e.g., "Real-time anomaly detection using watsonx.ai"]
-- **Feature 2:** [Brief description]
-- **Feature 3:** [Brief description]
-- **Feature 4:** [Optional]
+- **Feature 1:** [Automated alert classification (false positive vs. real threat) using LLM analysis]
+- **Feature 2:** [ MITRE ATT&CK technique mapping for confirmed threats]
+- **Feature 3:** [Correlated grouping of related alerts into single incidents]
+- **Feature 4:** [Auto-generated BLUF-style threat summary report]
 - **Feature 5:** [Optional]
 
 ---
@@ -45,11 +48,11 @@
 
 | Category | Technologies |
 |---|---|
-| **Languages** | [e.g., Python, TypeScript] |
-| **Frameworks** | [e.g., FastAPI, React] |
-| **IBM Technologies** | [e.g., watsonx.ai, IBM Bob, IBM Cloud] |
-| **Databases** | [e.g., PostgreSQL, Redis] |
-| **Other** | [e.g., Docker, GitHub Actions] |
+| **Languages** | [Python] |
+| **Frameworks** | [None — command-line scripts only] |
+| **IBM Technologies** | [IBM Bob, watsonx.ai] |
+| **Databases** | [alerts and results stored as CSV/JSON files] |
+| **Other** | [GitHub Actions] |
 
 ---
 
@@ -77,7 +80,7 @@
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/[your-repo].git
+git clone https://github.com/OhmRobin1/bob-ai-hackathon--NullThreat-.git
 cd [your-repo]
 
 # 2. Install dependencies
@@ -108,9 +111,9 @@ cp .env.example .env
 
 > Be honest — judges appreciate transparency over overclaiming.
 
-- [Limitation 1: e.g., "Authentication is mocked — not production-ready"]
-- [Limitation 2: e.g., "Only tested on Chrome"]
-- [Limitation 3: e.g., "Feature X is scaffolded but not fully implemented"]
+- [Limitation 1: Uses a simulated alert dataset, not a live SIEM/satellite feed integration]
+- [Limitation 2: MITRE ATT&CK mapping is limited to a predefined reference list of ~10 techniques, not the full framework]
+- [Limitation 3: No persistent database — results are generated per run, not stored historically]
 
 ---
 
