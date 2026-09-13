@@ -8,36 +8,31 @@
 
 | Field | Value |
 |---|---|
-| **Team Name** | [Your Team Name] |
-| **Track** | [AI / DevOps / Sustainability / Open] |
-| **Team Lead** | [Name] — [email@ibm.com] |
-| **Members** | [Name 1], [Name 2], [Name 3] |
+| **Team Name** | NullThreat |
+| **Track** | AI |
+| **Team Lead** | Bhargav — [email@ibm.com] |
+| **Members** | Saumya, Milonee, Ohm |
 
 ---
 
 ## 🎯 Problem Statement
 
-> In 2–3 sentences: What problem does your project solve? Who experiences this problem?
-
-[Describe the real-world problem your project addresses. Be specific about who the user is and what pain point they face.]
+Defense analysts receive thousands of security alerts daily from SIEM systems, satellite feeds, and cyber sensors, in inconsistent formats — no human team can review them all manually. Missing a genuine threat is catastrophic, while chasing false positives wastes critical response time, and commanders need clear, prioritized threat summaries in minutes, not hours.
 
 ---
 
 ## 💡 Solution
 
-> In 2–3 sentences: What did you build? How does it solve the problem above?
-
-[Describe your solution clearly. Explain the core mechanism — what makes it work.]
+NullThreat is an AI-powered alert triage tool that ingests security alerts, uses an LLM to classify each as a false positive or genuine threat, maps real threats to known MITRE ATT&CK techniques, and generates a BLUF (Bottom Line Up Front) summary report so analysts can act on the highest-priority threats first.
 
 ---
 
 ## ✨ Key Features
 
-- **Feature 1:** [Brief description — e.g., "Real-time anomaly detection using watsonx.ai"]
-- **Feature 2:** [Brief description]
-- **Feature 3:** [Brief description]
-- **Feature 4:** [Optional]
-- **Feature 5:** [Optional]
+- **Feature 1:** Automated alert classification (false positive vs. real threat) using LLM analysis
+- **Feature 2:** MITRE ATT&CK technique mapping for confirmed threats
+- **Feature 3:** Correlated grouping of related alerts into single incidents
+- **Feature 4:** Auto-generated BLUF-style threat summary report
 
 ---
 
@@ -45,11 +40,11 @@
 
 | Category | Technologies |
 |---|---|
-| **Languages** | [e.g., Python, TypeScript] |
-| **Frameworks** | [e.g., FastAPI, React] |
-| **IBM Technologies** | [e.g., watsonx.ai, IBM Bob, IBM Cloud] |
-| **Databases** | [e.g., PostgreSQL, Redis] |
-| **Other** | [e.g., Docker, GitHub Actions] |
+| **Languages** | Python |
+| **Frameworks** | None - command-line scripts only |
+| **IBM Technologies** | IBM Bob, watsonx.ai |
+| **Databases** | None - alerts and results stored as CSV files |
+| **Other** | GitHub Actions |
 
 ---
 
@@ -73,8 +68,16 @@
 
 ## ⚡ How to Run
 
-> **Copy these exact steps from your [`docs/setup-guide.md`](docs/setup-guide.md)**
+> git clone https://github.com/OhmRobin1/bob-ai-hackathon-nullthreat.git
+cd bob-ai-hackathon-nullthreat
 
+pip install -r requirements.txt
+
+cp .env.example .env
+# Add your watsonx/API key to .env
+
+python src/classify_alerts.py
+python src/generate_report.py
 ```bash
 # 1. Clone the repo
 git clone https://github.com/[your-repo].git
@@ -108,9 +111,9 @@ cp .env.example .env
 
 > Be honest — judges appreciate transparency over overclaiming.
 
-- [Limitation 1: e.g., "Authentication is mocked — not production-ready"]
-- [Limitation 2: e.g., "Only tested on Chrome"]
-- [Limitation 3: e.g., "Feature X is scaffolded but not fully implemented"]
+- [Limitation 1: Uses a simulated alert dataset, not a live SIEM/satellite feed integration]
+- [Limitation 2: MITRE ATT&CK mapping is limited to a predefined reference list of ~10 techniques, not the full framework]
+- [Limitation 3: No persistent database — results are generated per run, not stored historically]
 
 ---
 
