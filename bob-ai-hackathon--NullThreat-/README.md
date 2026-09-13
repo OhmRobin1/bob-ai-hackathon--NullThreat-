@@ -1,6 +1,5 @@
 # 🚀 Threat Intelligence Correlation & Alert Prioritization
 
-> ⚠️ **Replace everything in `[ ]` brackets with your actual content before submission.**
 
 ---
 
