@@ -57,40 +57,52 @@ The solution prioritizes genuine and critical threats while filtering out false 
 ## 📁 Repository Structure
 
 ```
-├── src/                  # All source code
-├── docs/                 # Written documentation
+├── src/                        # All source code
+│   ├── classify_alerts.py      # Step 1: AI alert classifier (demo + watsonx.ai modes)
+│   ├── generate_report.py      # Step 2: BLUF report generator
+│   ├── requirements.txt        # Python dependencies
+│   ├── data/alerts.csv         # 40 simulated security alerts (input)
+│   └── output/                 # Generated outputs (results.json, bluf_report.md)
+├── demo/                       # Demo dashboard
+│   └── index.html              # ← Open this in any browser to see the full demo
+├── docs/                       # Written documentation
 │   ├── problem-statement.md
 │   ├── solution-overview.md
 │   ├── architecture.md
 │   └── setup-guide.md
-├── demo/                 # Demo artifacts
-│   ├── screenshots/      # App screenshots
-│   └── demo-video-link.txt  # Link to demo video
-├── presentation/         # Slide deck
-└── submission.yaml       # Structured submission metadata
+├── presentation/               # Slide deck
+└── submission.yaml             # Structured submission metadata
 ```
 
 ---
 
 ## ⚡ How to Run
 
-> **Copy these exact steps from your [`docs/setup-guide.md`](docs/setup-guide.md)**
+### Option A — View Demo (no install needed)
+```
+1. Clone the repo
+2. Open  demo/index.html  in any browser
+3. Done — no server, no Python, no API key required
+```
 
+### Option B — Run the full Python pipeline
 ```bash
 # 1. Clone the repo
 git clone https://github.com/OhmRobin1/bob-ai-hackathon--NullThreat-.git
-cd bob-ai-hackathon-nullthreat
+cd bob-ai-hackathon--NullThreat-
 
 # 2. Install dependencies
-pip install -r requirements.txt
+pip install -r src/requirements.txt
 
-# 3. Configure environment
-cp .env.example .env
-# Edit .env with your values
-
-# 4. Run the project
+# 3. Run the classifier (demo mode — no API key needed)
 python src/classify_alerts.py
+
+# 4. Generate the BLUF report
 python src/generate_report.py
+
+# 5. (Optional) Switch to IBM watsonx.ai mode
+# Copy src/.env.example to src/.env, fill in WATSONX_API_KEY + WATSONX_PROJECT_ID
+# Then: set CLASSIFY_MODE=watsonx and re-run classify_alerts.py
 ```
 
 ---
@@ -99,10 +111,12 @@ python src/generate_report.py
 
 | Artifact | Link |
 |---|---|
+| 🌐 **Interactive Dashboard** | **[Open demo/index.html](demo/index.html)** — open in any browser, no install needed |
 | 📹 Demo Video | [See demo/demo-video-link.txt](demo/demo-video-link.txt) |
-| 🌐 Live Demo | [See demo/live-demo-url.txt](demo/live-demo-url.txt) |
 | 🖼️ Screenshots | [See demo/screenshots/](demo/screenshots/) |
-| 📊 Presentation | [See presentation/slides.pdf](presentation/) |
+| 📊 Presentation | [See presentation/](presentation/) |
+
+> **Demo highlights:** Dashboard · All Alerts (filterable/sortable) · Incident Groups · MITRE ATT&CK Matrix · 🧪 Live Classifier (type any alert, get instant classification + MITRE mapping)
 
 ---
 

@@ -1,5 +1,5 @@
 # NullThreat — Threat Intelligence BLUF Report
-**Generated:** 2026-09-13 05:29 UTC  
+**Generated:** 2026-09-13 10:35 UTC  
 **Model:** rule-based-demo  
 **Alerts analysed:** 40
 
