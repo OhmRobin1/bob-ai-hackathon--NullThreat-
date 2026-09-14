@@ -235,6 +235,33 @@ tbody tr:hover td{background:#161b22}
 
 /* ── FOOTER ── */
 .footer{text-align:center;padding:20px;color:var(--text2);font-size:11px;border-top:1px solid var(--border);margin-top:8px}
+
+/* ── LIVE DEMO PAGE ── */
+.sev-pick{background:none;border:none;cursor:pointer;padding:2px;border-radius:6px;transition:all .15s;opacity:.5}
+.sev-pick:hover{opacity:.8}
+.sev-pick.active-pick{opacity:1;box-shadow:0 0 0 2px var(--blue)}
+.demo-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-verdict{border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.result-verdict.threat{background:var(--red-bg);border:1px solid var(--red-border)}
+.result-verdict.fp{background:var(--green-bg);border:1px solid var(--green-border)}
+.verdict-icon{font-size:32px;flex-shrink:0}
+.verdict-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px}
+.verdict-label.threat{color:var(--red)}.verdict-label.fp{color:var(--green)}
+.verdict-title{font-size:18px;font-weight:800;color:var(--text3)}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.result-cell{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px}
+.result-cell-key{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.result-cell-val{font-size:13px;color:var(--text3);font-weight:600;line-height:1.4}
+.sample-item{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s}
+.sample-item:hover{border-color:var(--blue);background:#0d1f37}
+.sample-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sample-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;gap:12px;align-items:flex-start}
+.history-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.history-body{flex:1;min-width:0}
+.history-desc{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.history-meta{font-size:10px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -257,6 +284,7 @@ tbody tr:hover td{background:#161b22}
   <button class="mob-btn" onclick="showPage('alerts',this)">Alerts</button>
   <button class="mob-btn" onclick="showPage('incidents',this)">Incidents</button>
   <button class="mob-btn" onclick="showPage('mitre',this)">MITRE</button>
+  <button class="mob-btn" onclick="showPage('demo',this)">🧪 Live Demo</button>
   <button class="mob-btn" onclick="showPage('pipeline',this)">Pipeline</button>
 </div>
 
@@ -279,6 +307,9 @@ tbody tr:hover td{background:#161b22}
     <span class="nav-icon">🛡️</span>MITRE Matrix<span class="nav-badge green">10</span>
   </div>
   <div class="nav-section">System</div>
+  <div class="nav-item" onclick="showPage('demo',this)" data-page="demo">
+    <span class="nav-icon">🧪</span>Live Demo
+  </div>
   <div class="nav-item" onclick="showPage('pipeline',this)" data-page="pipeline">
     <span class="nav-icon">⚙️</span>Pipeline
   </div>
@@ -457,6 +488,73 @@ tbody tr:hover td{background:#161b22}
 </div>
 
 <!-- ═══════════ PAGE: PIPELINE ═══════════ -->
+<!-- ═══════════ PAGE: LIVE DEMO ═══════════ -->
+<div id="page-demo" class="page">
+  <div class="page-header">
+    <div class="page-title">🧪 Live Demo — Classify an Alert</div>
+    <div class="page-sub">Type or paste any alert description below, choose source &amp; severity, then hit Analyse. Use the sample alerts to demo the classifier live.</div>
+  </div>
+
+  <!-- INPUT FORM -->
+  <div class="two-col" style="margin-bottom:0">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="card-title">Alert Input</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Source System</label>
+            <select id="demo-src" style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:9px 12px;border-radius:8px;font-size:13px;outline:none">
+              <option value="SIEM">SIEM</option>
+              <option value="cyber sensor">Cyber Sensor</option>
+              <option value="intel report">Intel Report</option>
+              <option value="satellite feed">Satellite Feed</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Severity</label>
+            <div style="display:flex;gap:8px">
+              <button class="sev-pick active-pick" data-sev="low" onclick="pickSev(this)"><span class="sev sev-low">LOW</span></button>
+              <button class="sev-pick" data-sev="medium" onclick="pickSev(this)"><span class="sev sev-medium">MEDIUM</span></button>
+              <button class="sev-pick" data-sev="high" onclick="pickSev(this)"><span class="sev sev-high">HIGH</span></button>
+              <button class="sev-pick" data-sev="critical" onclick="pickSev(this)"><span class="sev sev-critical">CRITICAL</span></button>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Alert Description</label>
+            <textarea id="demo-desc" rows="4" placeholder="e.g. Unusual outbound traffic spike to unknown external IP from classified server..." style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:10px 12px;border-radius:8px;font-size:13px;outline:none;resize:vertical;line-height:1.6;font-family:inherit"></textarea>
+          </div>
+          <button class="btn btn-red" style="width:100%;justify-content:center;padding:11px;font-size:13px" onclick="runDemo()">
+            ⚡ Analyse Alert
+          </button>
+        </div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="card" id="demo-output" style="display:none">
+        <div class="card-title">Classification Result</div>
+        <div id="demo-result-body"></div>
+      </div>
+    </div>
+
+    <!-- SAMPLE ALERTS PANEL -->
+    <div class="card" style="height:fit-content">
+      <div class="card-title">Sample Test Alerts <span style="font-size:10px;font-weight:400;color:var(--text2)">— click any to load</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="sample-list"></div>
+    </div>
+  </div>
+
+  <!-- DEMO HISTORY -->
+  <div style="margin-top:20px">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      Analysis History
+      <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="clearHistory()">Clear</button>
+    </div>
+    <div id="demo-history" style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:12px;color:var(--text2);padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">No analyses yet — run your first alert above.</div>
+    </div>
+  </div>
+</div>
+
 <div id="page-pipeline" class="page">
   <div class="page-header">
     <div class="page-title">How It Works — NullThreat Pipeline</div>
@@ -795,6 +893,248 @@ function openIncidentModal(inc,alerts){
 
 function closeModal(e){if(e.target===document.getElementById("modal"))document.getElementById("modal").classList.remove("open")}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("modal").classList.remove("open")});
+
+// ── LIVE DEMO PAGE ────────────────────────────────────────────────────────
+// 20 sample test alerts — mix of obvious threats, obvious false positives,
+// and a few tricky edge cases to make the demo interesting.
+const SAMPLES = [
+  // ── CLEAR THREATS ──
+  {label:"C2 Beaconing",sev:"critical",src:"cyber sensor",
+   desc:"Host 192.168.1.55 is making outbound HTTP GET requests every 30 seconds to IP 203.0.113.44 — consistent with C2 beaconing behaviour.",
+   expected:"real_threat"},
+  {label:"Ransomware Activity",sev:"critical",src:"cyber sensor",
+   desc:"File server FS-09 has renamed 3,400 files with .locked extension in under 2 minutes. Ransomware-like encryption activity confirmed.",
+   expected:"real_threat"},
+  {label:"Mimikatz Detected",sev:"high",src:"cyber sensor",
+   desc:"Mimikatz credential dumping tool signature detected in memory on workstation WS-201. Possible attacker harvesting domain credentials.",
+   expected:"real_threat"},
+  {label:"Phishing Click",sev:"high",src:"intel report",
+   desc:"Three employees in the finance department clicked a phishing link from a spoofed HR email. Malicious payload download attempted.",
+   expected:"real_threat"},
+  {label:"Lateral Movement",sev:"high",src:"cyber sensor",
+   desc:"SMB enumeration detected from WS-099 to 22 internal hosts within 5 minutes. Classic lateral movement pattern observed.",
+   expected:"real_threat"},
+  {label:"Zero-Day Exploit",sev:"critical",src:"intel report",
+   desc:"Active exploitation of CVE-2024-9871 observed on firewall FW-03. Attacker achieved unauthenticated remote code execution.",
+   expected:"real_threat"},
+  {label:"Privilege Escalation",sev:"high",src:"cyber sensor",
+   desc:"User account 'bsmith' elevated to Domain Admin without a change ticket. No scheduled maintenance window active.",
+   expected:"real_threat"},
+  {label:"Data Exfiltration",sev:"high",src:"SIEM",
+   desc:"Unusual outbound transfer: 8.4 GB sent from classified segment server SRV-classified-02 to personal Dropbox account over HTTPS.",
+   expected:"real_threat"},
+  {label:"PowerShell Encoded",sev:"medium",src:"cyber sensor",
+   desc:"PowerShell launched with -EncodedCommand flag on endpoint EP-330. Encoded payload decoded to a reverse shell stager.",
+   expected:"real_threat"},
+  {label:"USB on Air-Gap",sev:"high",src:"cyber sensor",
+   desc:"Unauthorized USB storage device plugged into air-gapped workstation AG-07 inside the secure operations centre.",
+   expected:"real_threat"},
+  // ── CLEAR FALSE POSITIVES ──
+  {label:"Scheduled Backup",sev:"low",src:"SIEM",
+   desc:"Nightly backup job completed successfully on server DB-12. All 240 GB backed up to offsite storage. No errors.",
+   expected:"false_positive"},
+  {label:"Password Reset",sev:"low",src:"SIEM",
+   desc:"User john.doe@corp.com reset their password via the self-service portal. No suspicious context. Normal activity.",
+   expected:"false_positive"},
+  {label:"AV Update",sev:"low",src:"SIEM",
+   desc:"Antivirus definitions updated on 340 endpoints. Version 2024.11.02. No threats detected during post-update scan.",
+   expected:"false_positive"},
+  {label:"Patch Deployment",sev:"low",src:"SIEM",
+   desc:"Monthly patch cycle completed. 47 Windows updates installed on servers SRV-01 through SRV-12 via WSUS. Approved change CHG-5501.",
+   expected:"false_positive"},
+  {label:"Certificate Renewal",sev:"low",src:"cyber sensor",
+   desc:"TLS certificate renewed on load balancer LB-02. New cert valid for 12 months. No interruption to service.",
+   expected:"false_positive"},
+  {label:"Satellite Maintenance",sev:"low",src:"satellite feed",
+   desc:"Satellite uplink signal variance detected during scheduled maintenance window 02:00–04:00 UTC. Expected behaviour.",
+   expected:"false_positive"},
+  {label:"DHCP Lease",sev:"low",src:"SIEM",
+   desc:"DHCP lease renewed for printer PR-14 in Building C. Standard 8-hour lease cycle. No anomaly.",
+   expected:"false_positive"},
+  {label:"Admin Login",sev:"low",src:"SIEM",
+   desc:"System administrator logged in from approved VPN IP 10.0.0.5 at 09:14 UTC. Matches approved remote working schedule.",
+   expected:"false_positive"},
+  // ── TRICKY EDGE CASES ──
+  {label:"Port Scan (IT Team)",sev:"medium",src:"cyber sensor",
+   desc:"Internal port scan detected from 10.10.10.5 across /24 subnet. Security team confirmed this was an authorised vulnerability assessment.",
+   expected:"false_positive"},
+  {label:"Failed Logins",sev:"medium",src:"SIEM",
+   desc:"Multiple failed SSH login attempts on bastion host from IP 45.33.32.156. 14 attempts in 3 minutes. Account not locked.",
+   expected:"real_threat"},
+];
+
+// Rule engine (same logic as classify_alerts.py demo mode)
+const DEMO_RULES = [
+  {kw:"c2",              label:"application_protocol", tech:"T1071 - Application Layer Protocol",     reason:"Traffic pattern consistent with C2 beaconing"},
+  {kw:"dga",             label:"application_protocol", tech:"T1071 - Application Layer Protocol",     reason:"DGA domain pattern indicates C2 activity"},
+  {kw:"beaconing",       label:"application_protocol", tech:"T1071 - Application Layer Protocol",     reason:"Periodic beaconing suggests C2 channel"},
+  {kw:"phishing",        label:"phishing",              tech:"T1566 - Phishing",                       reason:"Phishing campaign or click-through detected"},
+  {kw:"malicious link",  label:"phishing",              tech:"T1566 - Phishing",                       reason:"User interaction with malicious link"},
+  {kw:"lateral movement",label:"lateral_movement_smb",  tech:"T1021.002 - Remote Services: SMB/Windows Admin Shares", reason:"SMB-based lateral movement detected"},
+  {kw:"smb enumeration", label:"lateral_movement_smb",  tech:"T1021.002 - Remote Services: SMB/Windows Admin Shares", reason:"SMB enumeration across internal hosts"},
+  {kw:"mimikatz",        label:"credential_dumping",    tech:"T1003 - OS Credential Dumping",          reason:"Mimikatz signature — credential dumping"},
+  {kw:"credential dump", label:"credential_dumping",    tech:"T1003 - OS Credential Dumping",          reason:"In-memory credential dumping detected"},
+  {kw:"powershell",      label:"powershell",            tech:"T1059.001 - Command and Scripting Interpreter: PowerShell", reason:"Encoded PowerShell execution suspicious"},
+  {kw:"encoded command", label:"powershell",            tech:"T1059.001 - Command and Scripting Interpreter: PowerShell", reason:"Encoded command via PowerShell"},
+  {kw:"exfiltration",    label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Data exfiltration attempt detected"},
+  {kw:"dropbox",         label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Unauthorized cloud storage transfer"},
+  {kw:"usb",             label:"usb_exfil",             tech:"T1052.001 - Exfiltration Over Physical Medium: USB", reason:"Unauthorized USB device detected"},
+  {kw:"exploit",         label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Active exploitation of public app"},
+  {kw:"reverse shell",   label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Reverse shell established via exploit"},
+  {kw:"privilege escal", label:"privilege_escalation",  tech:"T1068 - Exploitation for Privilege Escalation", reason:"Privilege escalation without change ticket"},
+  {kw:"domain admin",    label:"privilege_escalation",  tech:"T1068 - Exploitation for Privilege Escalation", reason:"Unauthorized Domain Admin elevation"},
+  {kw:"ransomware",      label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Ransomware-like encryption activity"},
+  {kw:"locked extension",label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"File encryption consistent with ransomware"},
+  {kw:"zero-day",        label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Zero-day vulnerability exploited"},
+  {kw:"cve-",            label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Known CVE exploitation observed"},
+  {kw:"failed ssh",      label:"valid_accounts",        tech:"T1078 - Valid Accounts",                 reason:"SSH brute-force attempt"},
+  {kw:"multiple failed", label:"valid_accounts",        tech:"T1078 - Valid Accounts",                 reason:"Multiple auth failures — brute-force"},
+  {kw:"failed login",    label:"valid_accounts",        tech:"T1078 - Valid Accounts",                 reason:"Repeated login failures detected"},
+  {kw:"outbound traffic",label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Anomalous outbound volume detected"},
+];
+
+function classifyDesc(desc){
+  const d = desc.toLowerCase();
+  for(const r of DEMO_RULES){
+    if(d.includes(r.kw)) return {cls:"real_threat", mitre:r.tech, reason:r.reason};
+  }
+  return {cls:"false_positive", mitre:null, reason:"No threat indicators matched; assessed as routine or benign activity."};
+}
+
+// Severity picker
+let demoSev = "low";
+function pickSev(btn){
+  document.querySelectorAll(".sev-pick").forEach(b=>b.classList.remove("active-pick"));
+  btn.classList.add("active-pick");
+  demoSev = btn.dataset.sev;
+}
+
+// Load sample into form
+function loadSample(s){
+  document.getElementById("demo-desc").value = s.desc;
+  document.getElementById("demo-src").value  = s.src;
+  demoSev = s.sev;
+  document.querySelectorAll(".sev-pick").forEach(b=>{
+    b.classList.toggle("active-pick", b.dataset.sev === s.sev);
+  });
+  document.getElementById("demo-desc").focus();
+  toast("Sample loaded — hit Analyse!");
+}
+
+// Run classification
+let historyLog = [];
+function runDemo(){
+  const desc = document.getElementById("demo-desc").value.trim();
+  const src  = document.getElementById("demo-src").value;
+  if(!desc){toast("Please enter an alert description first.", "warn"); return;}
+
+  // Animate button
+  const btn = document.querySelector("#page-demo .btn-red");
+  btn.innerHTML = '<span class="demo-spinner"></span> Analysing…';
+  btn.disabled = true;
+
+  // Simulate a short delay for realism
+  setTimeout(()=>{
+    const result = classifyDesc(desc);
+    showDemoResult(desc, src, demoSev, result);
+    addToHistory(desc, src, demoSev, result);
+    btn.innerHTML = "⚡ Analyse Alert";
+    btn.disabled = false;
+  }, 900);
+}
+
+function showDemoResult(desc, src, sev, result){
+  const isThreat = result.cls === "real_threat";
+  const out = document.getElementById("demo-output");
+  const body = document.getElementById("demo-result-body");
+  out.style.display = "block";
+
+  body.innerHTML = `
+    <div class="result-verdict ${isThreat?'threat':'fp'}">
+      <div class="verdict-icon">${isThreat?"🚨":"✅"}</div>
+      <div>
+        <div class="verdict-label ${isThreat?'threat':'fp'}">${isThreat?"CONFIRMED THREAT":"FALSE POSITIVE"}</div>
+        <div class="verdict-title">${isThreat?"Immediate review required":"No action needed"}</div>
+      </div>
+    </div>
+    <div class="result-grid">
+      <div class="result-cell">
+        <div class="result-cell-key">Classification</div>
+        <div class="result-cell-val">${clsBadge(result.cls)}</div>
+      </div>
+      <div class="result-cell">
+        <div class="result-cell-key">Severity</div>
+        <div class="result-cell-val">${sevBadge(sev)}</div>
+      </div>
+      <div class="result-cell">
+        <div class="result-cell-key">Source</div>
+        <div class="result-cell-val">${srcTag(src)}</div>
+      </div>
+      <div class="result-cell">
+        <div class="result-cell-key">Confidence</div>
+        <div class="result-cell-val" style="color:var(--green)">HIGH</div>
+      </div>
+    </div>
+    <div class="result-cell" style="margin-bottom:10px">
+      <div class="result-cell-key">MITRE ATT&CK Technique</div>
+      <div class="result-cell-val" style="margin-top:5px">${result.mitre ? `<span class="mitre-tag" style="font-size:12px;padding:4px 10px">${result.mitre}</span>` : '<span style="color:var(--text2)">— Not applicable</span>'}</div>
+    </div>
+    <div class="result-cell">
+      <div class="result-cell-key">Analyst Reason</div>
+      <div class="result-cell-val" style="color:var(--text2);font-weight:400;font-size:12px;margin-top:4px">${result.reason}</div>
+    </div>`;
+
+  out.scrollIntoView({behavior:"smooth", block:"nearest"});
+  toast(isThreat ? "Threat detected!" : "False positive — no action needed.", isThreat?"warn":"success");
+}
+
+function addToHistory(desc, src, sev, result){
+  const isThreat = result.cls === "real_threat";
+  historyLog.unshift({desc, src, sev, result, ts: new Date().toLocaleTimeString()});
+  const h = document.getElementById("demo-history");
+  if(historyLog.length === 1) h.innerHTML = ""; // remove placeholder
+  const item = document.createElement("div");
+  item.className = "history-item";
+  item.innerHTML = `
+    <div class="history-dot" style="background:${isThreat?'var(--red)':'var(--green)'}"></div>
+    <div class="history-body">
+      <div class="history-desc" title="${desc}">${desc}</div>
+      <div class="history-meta">
+        <span>${isThreat?"🚨 THREAT":"✅ FALSE POS"}</span>
+        <span>${srcTag(src)}</span>
+        <span>${sevBadge(sev)}</span>
+        ${result.mitre ? `<span class="mitre-tag">${result.mitre}</span>` : ""}
+        <span style="color:var(--text2)">${historyLog[0].ts}</span>
+      </div>
+    </div>`;
+  h.insertBefore(item, h.firstChild);
+}
+
+function clearHistory(){
+  historyLog = [];
+  document.getElementById("demo-history").innerHTML =
+    '<div style="font-size:12px;color:var(--text2);padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">No analyses yet — run your first alert above.</div>';
+  toast("History cleared.");
+}
+
+// Render sample alerts panel
+(function(){
+  const list = document.getElementById("sample-list");
+  const THREAT_EXPECTED = {real_threat:true, false_positive:false};
+  SAMPLES.forEach(s=>{
+    const div = document.createElement("div");
+    div.className = "sample-item";
+    div.innerHTML = `
+      <div class="sample-top">
+        ${sevBadge(s.sev)}
+        <span style="font-size:11px;font-weight:700;color:var(--text3)">${s.label}</span>
+        <span style="margin-left:auto;font-size:10px;color:${s.expected==='real_threat'?'var(--red)':'var(--green)'}">${s.expected==='real_threat'?"THREAT":"BENIGN"}</span>
+      </div>
+      <div class="sample-desc">${s.desc.length>100?s.desc.slice(0,100)+'…':s.desc}</div>`;
+    div.onclick = () => loadSample(s);
+    list.appendChild(div);
+  });
+})();
 </script>
 </body>
 </html>
