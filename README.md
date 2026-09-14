@@ -118,7 +118,7 @@ python src/generate_report.py
 
 ## 🏅 What We're Most Proud Of
 
-Getting opportunity to represent our solution idea using IBM BOB AI.
+As first-year students building our first real project from scratch, we're proud that every one of us — regardless of prior coding experience — understands how BLUFShield works end-to-end and can explain any part of it. We used IBM Bob not just to generate code, but as a genuine learning partner throughout the build.
 
 ---
 
