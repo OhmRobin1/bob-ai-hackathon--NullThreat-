@@ -1,4 +1,4 @@
-NOT DEPLOYED — open demo/index.html locally in any browser (no server needed).
+NOT DEPLOYED — open https://ohmrobin1.github.io/bob-ai-hackathon--NullThreat-/ locally in any browser (no server needed).
 
 HOW TO VIEW THE DEMO:
   1. Clone the repo
