@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NullThreat — AI Threat Intelligence Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#090d18;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --text:#c9d1d9;--text2:#8b949e;--text3:#f0f6fc;
+  --red:#e05252;--red-bg:#3d1c1c;--red-border:#6e1818;
+  --orange:#f0883e;--orange-bg:#2d1e0e;
+  --yellow:#e3b341;--yellow-bg:#2d2a0e;
+  --green:#3fb950;--green-bg:#1a2e1a;--green-border:#1d4024;
+  --blue:#79c0ff;--blue-bg:#0d2137;
+  --purple:#a371f7;--purple-bg:#1f1435;--purple-border:#3d2a6e;
+}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200}
+.logo{font-size:20px;font-weight:800;color:var(--text3);letter-spacing:2px}
+.logo span{color:var(--red)}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.live-badge{display:flex;align-items:center;gap:6px;background:#0d1f0d;border:1px solid var(--green-border);border-radius:20px;padding:5px 14px;font-size:11px;color:var(--green);font-weight:600}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 4px var(--green)}50%{opacity:.3;box-shadow:none}}
+.time-display{font-size:11px;color:var(--text2);font-family:monospace}
+
+/* ── SIDEBAR NAV ── */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.nav-section{padding:6px 20px;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-top:10px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text3)}
+.nav-item.active{background:var(--surface2);color:var(--text3);border-left-color:var(--blue)}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+.nav-badge.green{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.nav-badge.purple{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)}
+
+/* ── MAIN CONTENT ── */
+.content{flex:1;padding:24px 28px;overflow-y:auto;min-width:0}
+.page{display:none}.page.active{display:block}
+
+/* ── PAGE HEADER ── */
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700;color:var(--text3);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text2)}
+
+/* ── BLUF BANNER ── */
+.bluf{background:linear-gradient(135deg,#1a0a0a,#2a0f0f);border:1px solid var(--red-border);border-left:4px solid var(--red);border-radius:10px;padding:18px 22px;margin-bottom:24px;position:relative;overflow:hidden}
+.bluf::before{content:'';position:absolute;top:0;right:0;width:200px;height:100%;background:linear-gradient(90deg,transparent,rgba(224,82,82,.04));pointer-events:none}
+.bluf-label{font-size:10px;font-weight:700;color:var(--red);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.bluf-text{font-size:13.5px;color:var(--text3);line-height:1.75}
+.bluf-text strong{color:var(--red)}
+.bluf-actions{display:flex;gap:8px;margin-top:14px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.btn-red:hover{background:#4d2020}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--text3);border-color:var(--text2)}
+
+/* ── STAT CARDS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.stat-card.c-red::after{background:var(--red)}
+.stat-card.c-orange::after{background:var(--orange)}
+.stat-card.c-green::after{background:var(--green)}
+.stat-card.c-purple::after{background:var(--purple)}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.stat-icon{font-size:22px}
+.stat-trend{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.trend-up{background:var(--red-bg);color:var(--red)}
+.trend-ok{background:var(--green-bg);color:var(--green)}
+.stat-num{font-size:38px;font-weight:800;line-height:1;margin-bottom:4px}
+.stat-num.red{color:var(--red)}.stat-num.orange{color:var(--orange)}.stat-num.green{color:var(--green)}.stat-num.purple{color:var(--purple)}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.stat-sub{font-size:10px;color:var(--text2);margin-top:4px}
+
+/* ── TWO COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+.card-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+
+/* ── SVG CHARTS ── */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:10px;flex:1}
+.leg-row{display:flex;align-items:center;justify-content:space-between}
+.leg-left{display:flex;align-items:center;gap:8px;font-size:12px}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.leg-val{font-size:12px;font-weight:700;color:var(--text3)}
+
+/* ── HORIZONTAL BARS ── */
+.hbar-list{display:flex;flex-direction:column;gap:11px}
+.hbar-row{display:flex;flex-direction:column;gap:4px}
+.hbar-meta{display:flex;justify-content:space-between;font-size:11px}
+.hbar-key{color:var(--text2)}
+.hbar-val{color:var(--text3);font-weight:600}
+.hbar-track{background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;border-radius:6px;padding:10px 8px}
+.tl-item:hover{background:var(--surface2)}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.tl-body{flex:1;min-width:0}
+.tl-time{font-size:10px;color:var(--text2);margin-bottom:2px}
+.tl-desc{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-mitre{font-size:10px;color:var(--blue);margin-top:3px}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--surface2);position:sticky;top:0}
+th{padding:11px 14px;text-align:left;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:700;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--text3)}
+th .sort-arrow{display:inline-block;margin-left:4px;opacity:.4}
+th.sorted .sort-arrow{opacity:1;color:var(--blue)}
+td{padding:11px 14px;font-size:12px;border-top:1px solid var(--border);vertical-align:middle}
+tbody tr{cursor:pointer;transition:background .1s}
+tbody tr:hover td{background:#161b22}
+
+/* ── BADGES ── */
+.sev{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.sev-critical{background:var(--red-bg);color:var(--red)}
+.sev-high{background:var(--orange-bg);color:var(--orange)}
+.sev-medium{background:var(--yellow-bg);color:var(--yellow)}
+.sev-low{background:var(--green-bg);color:var(--green)}
+.cls-badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700}
+.cls-threat{background:var(--red-bg);color:var(--red)}
+.cls-fp{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.mitre-tag{font-size:10px;color:var(--blue);background:var(--blue-bg);padding:3px 8px;border-radius:5px;white-space:nowrap}
+.src-tag{font-size:10px;padding:3px 8px;border-radius:5px;white-space:nowrap;font-weight:600}
+.src-SIEM{background:#1a1a2e;color:var(--blue)}
+.src-cyber{background:#1a2e1a;color:#56d364}
+.src-intel{background:var(--orange-bg);color:var(--orange)}
+.src-sat{background:var(--purple-bg);color:var(--purple)}
+
+/* ── SEARCH + FILTERS ── */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search-wrap{position:relative;flex:1;min-width:220px}
+.search-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:9px 14px 9px 38px;color:var(--text3);font-size:12px;outline:none;transition:border .15s}
+.search-input:focus{border-color:var(--blue)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:13px;pointer-events:none}
+.filter-group{display:flex;gap:6px;flex-wrap:wrap}
+.fbtn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.fbtn:hover,.fbtn.active{background:var(--surface);color:var(--text3);border-color:var(--text2)}
+.fbtn.fa-critical.active{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.fbtn.fa-high.active{background:var(--orange-bg);color:var(--orange);border-color:#6e3810}
+.fbtn.fa-medium.active{background:var(--yellow-bg);color:var(--yellow);border-color:#6e6010}
+.fbtn.fa-low.active{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.fbtn.fa-threat.active{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.fbtn.fa-fp.active{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.row-count{font-size:11px;color:var(--text2);white-space:nowrap;align-self:center}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:620px;max-width:95vw;max-height:85vh;overflow-y:auto;position:relative}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-size:15px;font-weight:700;color:var(--text3)}
+.modal-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0 4px;line-height:1}
+.modal-close:hover{color:var(--text3)}
+.modal-body{padding:20px 24px}
+.modal-row{display:flex;gap:8px;margin-bottom:14px;align-items:flex-start}
+.modal-key{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;width:120px;flex-shrink:0;padding-top:3px}
+.modal-val{font-size:13px;color:var(--text3);flex:1;line-height:1.6}
+.modal-divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* ── INCIDENTS ── */
+.inc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-bottom:24px}
+.inc-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;cursor:pointer;transition:all .2s;border-top:3px solid var(--border)}
+.inc-card.sev-c{border-top-color:var(--red)}
+.inc-card.sev-h{border-top-color:var(--orange)}
+.inc-card.sev-m{border-top-color:var(--yellow)}
+.inc-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.inc-id{font-size:10px;color:var(--text2);font-weight:700;letter-spacing:1px;margin-bottom:6px}
+.inc-tech{font-size:12px;color:var(--blue);font-weight:700;line-height:1.4;margin-bottom:12px}
+.inc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.inc-big{font-size:28px;font-weight:800;color:var(--text3);line-height:1}
+.inc-tiny{font-size:10px;color:var(--text2);margin-top:2px}
+.inc-tags{display:flex;flex-wrap:wrap;gap:5px}
+.inc-tag{font-size:10px;background:var(--surface2);color:var(--text2);padding:2px 8px;border-radius:4px;border:1px solid var(--border2)}
+
+/* ── PIPELINE ── */
+.pipe-wrap{overflow-x:auto;padding:10px 0 20px}
+.pipe-row{display:flex;align-items:center;gap:0;min-width:700px}
+.pipe-step{display:flex;flex-direction:column;align-items:center;flex:1}
+.pipe-box{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px 12px;text-align:center;width:120px;transition:all .2s;cursor:default}
+.pipe-box:hover{border-color:var(--blue);transform:translateY(-2px)}
+.pipe-icon{font-size:24px;margin-bottom:8px}
+.pipe-name{font-size:11px;color:var(--text3);font-weight:700}
+.pipe-sub{font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4}
+.pipe-arrow{color:var(--border2);font-size:22px;padding:0 6px;flex-shrink:0;margin-bottom:30px}
+
+/* ── MITRE MATRIX ── */
+.mitre-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.mitre-cell{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;transition:all .2s;cursor:pointer}
+.mitre-cell:hover,.mitre-cell.highlight{border-color:var(--blue);background:#0d1f37}
+.mitre-id{font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px}
+.mitre-name{font-size:11px;color:var(--text3);line-height:1.4}
+.mitre-count{font-size:10px;color:var(--text2);margin-top:6px}
+.mitre-bar{height:3px;background:var(--surface);border-radius:2px;margin-top:6px;overflow:hidden}
+.mitre-bar-fill{height:100%;background:var(--blue);border-radius:2px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 18px;font-size:12px;color:var(--text3);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:3px solid var(--green)}
+.toast.warn{border-left:3px solid var(--red)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .two-col,.three-col{grid-template-columns:1fr}
+  .mob-nav{display:flex}
+}
+.mob-nav{display:none;gap:4px;overflow-x:auto;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:190}
+.mob-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.mob-btn.active{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
+
+/* ── FOOTER ── */
+.footer{text-align:center;padding:20px;color:var(--text2);font-size:11px;border-top:1px solid var(--border);margin-top:8px}
+
+/* ── LIVE DEMO PAGE ── */
+.sev-pick{background:none;border:none;cursor:pointer;padding:2px;border-radius:6px;transition:all .15s;opacity:.5}
+.sev-pick:hover{opacity:.8}
+.sev-pick.active-pick{opacity:1;box-shadow:0 0 0 2px var(--blue)}
+.demo-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-verdict{border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.result-verdict.threat{background:var(--red-bg);border:1px solid var(--red-border)}
+.result-verdict.fp{background:var(--green-bg);border:1px solid var(--green-border)}
+.verdict-icon{font-size:32px;flex-shrink:0}
+.verdict-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px}
+.verdict-label.threat{color:var(--red)}.verdict-label.fp{color:var(--green)}
+.verdict-title{font-size:18px;font-weight:800;color:var(--text3)}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.result-cell{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px}
+.result-cell-key{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.result-cell-val{font-size:13px;color:var(--text3);font-weight:600;line-height:1.4}
+.sample-item{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s}
+.sample-item:hover{border-color:var(--blue);background:#0d1f37}
+.sample-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sample-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;gap:12px;align-items:flex-start}
+.history-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.history-body{flex:1;min-width:0}
+.history-desc{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.history-meta{font-size:10px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── AUTHENTICATION ── */
+.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-screen.hidden{display:none}
+.auth-box{width:420px;max-width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:30px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.auth-brand{text-align:center;font-size:24px;font-weight:800;letter-spacing:2px;color:var(--text3);margin-bottom:6px}
+.auth-brand span{color:var(--red)}
+.auth-sub{text-align:center;color:var(--text2);font-size:12px;margin-bottom:24px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;margin-bottom:20px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px}
+.auth-tab{background:none;border:none;color:var(--text2);padding:9px;cursor:pointer;border-radius:6px;font-size:12px;font-weight:700}
+.auth-tab.active{background:var(--surface);color:var(--text3);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-field label{display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.auth-field input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text3);font-size:13px;outline:none}
+.auth-field input:focus{border-color:var(--blue)}
+.auth-btn{width:100%;justify-content:center;padding:11px;font-size:13px;margin-top:4px}
+.auth-error{min-height:16px;text-align:center;color:var(--red);font-size:11px}
+.user-menu{display:flex;align-items:center;gap:8px}
+.user-name{font-size:11px;color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-signout{padding:5px 10px;font-size:10px}
+@media(max-width:500px){.auth-box{padding:24px}.user-name{display:none}}
+
+</style>
+</head>
+<body>
+
+
+<!-- AUTHENTICATION SCREEN -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-brand"><span>NULL</span>THREAT</div>
+    <div class="auth-sub">AI Threat Intelligence Dashboard</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="login-tab" onclick="switchAuth('login')">Sign In</button>
+      <button class="auth-tab" id="register-tab" onclick="switchAuth('register')">Register</button>
+    </div>
+
+    <form class="auth-form" id="login-form" onsubmit="handleLogin(event)">
+      <div class="auth-field">
+        <label>Email</label>
+        <input id="login-email" type="email" placeholder="Enter your email" required>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input id="login-password" type="password" placeholder="Enter your password" required>
+      </div>
+      <div class="auth-error" id="login-error"></div>
+      <button class="btn btn-red auth-btn" type="submit">🔐 Sign In</button>
+    </form>
+
+    <form class="auth-form" id="register-form" style="display:none" onsubmit="handleRegister(event)">
+      <div class="auth-field">
+        <label>Full Name</label>
+        <input id="register-name" type="text" placeholder="Enter your name" required>
+      </div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input id="register-email" type="email" placeholder="Enter your email" required>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input id="register-password" type="password" placeholder="Create a password" minlength="6" required>
+      </div>
+      <div class="auth-field">
+        <label>Confirm Password</label>
+        <input id="register-confirm" type="password" placeholder="Confirm your password" minlength="6" required>
+      </div>
+      <div class="auth-error" id="register-error"></div>
+      <button class="btn btn-red auth-btn" type="submit">📝 Create Account</button>
+    </form>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:16px">
+    <div class="logo"><span>NULL</span>THREAT</div>
+    <div style="font-size:11px;color:var(--text2);letter-spacing:.5px;text-transform:uppercase">AI Threat Intelligence</div>
+  </div>
+  <div class="topbar-right">
+    <div class="time-display" id="clock"></div>
+    <div class="live-badge"><div class="live-dot"></div>Pipeline Active</div>
+    <div class="user-menu">
+      <span class="user-name" id="user-name"></span>
+      <button class="btn btn-ghost btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE NAV -->
+<div class="mob-nav">
+  <button class="mob-btn active" onclick="showPage('dashboard',this)">Dashboard</button>
+  <button class="mob-btn" onclick="showPage('alerts',this)">Alerts</button>
+  <button class="mob-btn" onclick="showPage('incidents',this)">Incidents</button>
+  <button class="mob-btn" onclick="showPage('mitre',this)">MITRE</button>
+  <button class="mob-btn" onclick="showPage('demo',this)">🧪 Live Demo</button>
+  <button class="mob-btn" onclick="showPage('pipeline',this)">Pipeline</button>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="nav-section">Overview</div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)" data-page="dashboard">
+    <span class="nav-icon">📊</span>Dashboard
+  </div>
+  <div class="nav-section">Analysis</div>
+  <div class="nav-item" onclick="showPage('alerts',this)" data-page="alerts">
+    <span class="nav-icon">🔔</span>All Alerts<span class="nav-badge">17</span>
+  </div>
+  <div class="nav-item" onclick="showPage('incidents',this)" data-page="incidents">
+    <span class="nav-icon">🔗</span>Incidents<span class="nav-badge purple">10</span>
+  </div>
+  <div class="nav-item" onclick="showPage('mitre',this)" data-page="mitre">
+    <span class="nav-icon">🛡️</span>MITRE Matrix<span class="nav-badge green">10</span>
+  </div>
+  <div class="nav-section">System</div>
+  <div class="nav-item" onclick="showPage('demo',this)" data-page="demo">
+    <span class="nav-icon">🧪</span>Live Demo
+  </div>
+  <div class="nav-item" onclick="showPage('pipeline',this)" data-page="pipeline">
+    <span class="nav-icon">⚙️</span>Pipeline
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="page-header">
+    <div class="page-title">Threat Intelligence Dashboard</div>
+    <div class="page-sub">Analysis run: 2024-11-02 · 40 alerts ingested · Model: rule-based-demo (watsonx.ai ready)</div>
+  </div>
+
+  <!-- BLUF -->
+  <div class="bluf">
+    <div class="bluf-label">⚡ Bottom Line Up Front</div>
+    <div class="bluf-text">
+      Of <strong>40 alerts</strong> analysed, <strong>17 confirmed threats</strong> were identified across
+      <strong>10 incident groups</strong>, with the highest severity reaching <strong>CRITICAL</strong>.
+      The most significant cluster involves <strong>4 correlated alerts</strong> mapped to
+      <strong>T1071 – C2 Application Layer Protocol</strong>, consistent with nation-state beaconing activity.
+      <strong>Immediate analyst review and response is required.</strong>
+    </div>
+    <div class="bluf-actions">
+      <button class="btn btn-red" onclick="showPage('incidents',document.querySelector('[data-page=incidents]'))">View Incidents →</button>
+      <button class="btn btn-ghost" onclick="showPage('alerts',document.querySelector('[data-page=alerts]'))">All Alerts</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card c-red" onclick="goAlerts('critical')">
+      <div class="stat-top"><span class="stat-icon">🔴</span><span class="stat-trend trend-up">CRITICAL</span></div>
+      <div class="stat-num red">4</div>
+      <div class="stat-label">Critical Threats</div>
+      <div class="stat-sub">Click to filter →</div>
+    </div>
+    <div class="stat-card c-orange" onclick="goAlerts('real_threat')">
+      <div class="stat-top"><span class="stat-icon">⚠️</span><span class="stat-trend trend-up">↑ 42%</span></div>
+      <div class="stat-num orange">17</div>
+      <div class="stat-label">Confirmed Threats</div>
+      <div class="stat-sub">Signal-to-noise: 42%</div>
+    </div>
+    <div class="stat-card c-green" onclick="goAlerts('false_positive')">
+      <div class="stat-top"><span class="stat-icon">✅</span><span class="stat-trend trend-ok">FILTERED</span></div>
+      <div class="stat-num green">23</div>
+      <div class="stat-label">False Positives</div>
+      <div class="stat-sub">Noise discarded</div>
+    </div>
+    <div class="stat-card c-purple" onclick="showPage('incidents',document.querySelector('[data-page=incidents]'))">
+      <div class="stat-top"><span class="stat-icon">🔗</span><span class="stat-trend trend-up">GROUPED</span></div>
+      <div class="stat-num purple">10</div>
+      <div class="stat-label">Incident Groups</div>
+      <div class="stat-sub">3 critical clusters</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="two-col">
+    <!-- Donut -->
+    <div class="card">
+      <div class="card-title">Classification Split</div>
+      <div class="donut-wrap">
+        <svg width="110" height="110" viewBox="0 0 36 36" style="flex-shrink:0">
+          <circle cx="18" cy="18" r="14" fill="none" stroke="#21262d" stroke-width="5"/>
+          <!-- FP: 57.5%, Threat: 42.5% -->
+          <circle cx="18" cy="18" r="14" fill="none" stroke="#e05252" stroke-width="5"
+            stroke-dasharray="42.5 57.5" stroke-dashoffset="25" transform="rotate(-90 18 18)"
+            style="transition:stroke-dasharray .8s ease"/>
+          <circle cx="18" cy="18" r="14" fill="none" stroke="#3fb950" stroke-width="5"
+            stroke-dasharray="57.5 42.5" stroke-dashoffset="-42.5" transform="rotate(-90 18 18)"/>
+          <text x="18" y="16.5" text-anchor="middle" font-size="5.5" fill="#f0f6fc" font-weight="800">42%</text>
+          <text x="18" y="22" text-anchor="middle" font-size="3.5" fill="#8b949e">threat rate</text>
+        </svg>
+        <div class="donut-legend">
+          <div class="leg-row"><div class="leg-left"><div class="leg-dot" style="background:#e05252"></div>Real Threats</div><div class="leg-val" style="color:#e05252">17</div></div>
+          <div class="leg-row"><div class="leg-left"><div class="leg-dot" style="background:#3fb950"></div>False Positives</div><div class="leg-val" style="color:#3fb950">23</div></div>
+          <div style="border-top:1px solid var(--border);margin:6px 0"></div>
+          <div class="leg-row"><div class="leg-left"><div class="leg-dot" style="background:#e05252"></div>Critical</div><div class="leg-val" style="color:#e05252">4</div></div>
+          <div class="leg-row"><div class="leg-left"><div class="leg-dot" style="background:#f0883e"></div>High</div><div class="leg-val" style="color:#f0883e">8</div></div>
+          <div class="leg-row"><div class="leg-left"><div class="leg-dot" style="background:#e3b341"></div>Medium</div><div class="leg-val" style="color:#e3b341">5</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MITRE bar -->
+    <div class="card">
+      <div class="card-title">Top MITRE Techniques <span style="font-size:10px;font-weight:400">(by alert count)</span></div>
+      <div class="hbar-list">
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">T1071 C2 Protocol</span><span class="hbar-val">4</span></div><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:#79c0ff"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">T1041 Exfiltration</span><span class="hbar-val">3</span></div><div class="hbar-track"><div class="hbar-fill" style="width:75%;background:#e05252"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">T1190 Exploit App</span><span class="hbar-val">2</span></div><div class="hbar-track"><div class="hbar-fill" style="width:50%;background:#f0883e"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">T1078 Valid Accounts</span><span class="hbar-val">2</span></div><div class="hbar-track"><div class="hbar-fill" style="width:50%;background:#e3b341"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">T1003 Cred Dump</span><span class="hbar-val">1</span></div><div class="hbar-track"><div class="hbar-fill" style="width:25%;background:#a371f7"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">T1059 PowerShell</span><span class="hbar-val">1</span></div><div class="hbar-track"><div class="hbar-fill" style="width:25%;background:#a371f7"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCE breakdown + Timeline -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Alerts by Source System</div>
+      <div class="hbar-list">
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">SIEM</span><span class="hbar-val">18 alerts · 3 threats</span></div><div class="hbar-track"><div class="hbar-fill" style="width:45%;background:#79c0ff"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">Cyber Sensor</span><span class="hbar-val">13 alerts · 9 threats</span></div><div class="hbar-track"><div class="hbar-fill" style="width:32.5%;background:#56d364"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">Intel Report</span><span class="hbar-val">6 alerts · 5 threats</span></div><div class="hbar-track"><div class="hbar-fill" style="width:15%;background:#f0883e"></div></div></div>
+        <div class="hbar-row"><div class="hbar-meta"><span class="hbar-key">Satellite Feed</span><span class="hbar-val">5 alerts · 0 threats</span></div><div class="hbar-track"><div class="hbar-fill" style="width:12.5%;background:#a371f7"></div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Threat Timeline <span style="font-size:10px;font-weight:400">(click to inspect)</span></div>
+      <div class="timeline" id="tl-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: ALERTS ═══════════ -->
+<div id="page-alerts" class="page">
+  <div class="page-header">
+    <div class="page-title">All Alerts</div>
+    <div class="page-sub">40 total · click any row for full detail · sortable columns</div>
+  </div>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search" placeholder="Search ID, description, source, MITRE technique..." oninput="renderTable()">
+    </div>
+    <span class="row-count" id="row-count">40 results</span>
+  </div>
+  <div class="filter-group" style="margin-bottom:14px">
+    <button class="fbtn active" onclick="setF('all',this)">All (40)</button>
+    <button class="fbtn fa-threat" onclick="setF('threat',this)">Threats (17)</button>
+    <button class="fbtn fa-fp" onclick="setF('fp',this)">False Positives (23)</button>
+    <button class="fbtn fa-critical" onclick="setF('critical',this)">Critical (4)</button>
+    <button class="fbtn fa-high" onclick="setF('high',this)">High (8)</button>
+    <button class="fbtn fa-medium" onclick="setF('medium',this)">Medium (5)</button>
+    <button class="fbtn fa-low" onclick="setF('low',this)">Low (23)</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('id')">Alert ID <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('ts')">Timestamp <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('src')">Source <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('sev')">Severity <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('cls')">Classification <span class="sort-arrow">↕</span></th>
+          <th>MITRE Technique</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody id="alerts-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: INCIDENTS ═══════════ -->
+<div id="page-incidents" class="page">
+  <div class="page-header">
+    <div class="page-title">Correlated Incident Groups</div>
+    <div class="page-sub">Alerts grouped by shared MITRE ATT&CK technique — likely parts of the same attack chain</div>
+  </div>
+  <div class="inc-grid" id="inc-grid"></div>
+</div>
+
+<!-- ═══════════ PAGE: MITRE ═══════════ -->
+<div id="page-mitre" class="page">
+  <div class="page-header">
+    <div class="page-title">MITRE ATT&CK Coverage</div>
+    <div class="page-sub">10 techniques detected · click a technique to filter alerts</div>
+  </div>
+  <div class="mitre-grid" id="mitre-grid"></div>
+</div>
+
+<!-- ═══════════ PAGE: PIPELINE ═══════════ -->
+<!-- ═══════════ PAGE: LIVE DEMO ═══════════ -->
+<div id="page-demo" class="page">
+  <div class="page-header">
+    <div class="page-title">🧪 Live Demo — Classify an Alert</div>
+    <div class="page-sub">Type or paste any alert description below, choose source &amp; severity, then hit Analyse. Use the sample alerts to demo the classifier live.</div>
+  </div>
+
+  <!-- INPUT FORM -->
+  <div class="two-col" style="margin-bottom:0">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="card-title">Alert Input</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Source System</label>
+            <select id="demo-src" style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:9px 12px;border-radius:8px;font-size:13px;outline:none">
+              <option value="SIEM">SIEM</option>
+              <option value="cyber sensor">Cyber Sensor</option>
+              <option value="intel report">Intel Report</option>
+              <option value="satellite feed">Satellite Feed</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Severity</label>
+            <div style="display:flex;gap:8px">
+              <button class="sev-pick active-pick" data-sev="low" onclick="pickSev(this)"><span class="sev sev-low">LOW</span></button>
+              <button class="sev-pick" data-sev="medium" onclick="pickSev(this)"><span class="sev sev-medium">MEDIUM</span></button>
+              <button class="sev-pick" data-sev="high" onclick="pickSev(this)"><span class="sev sev-high">HIGH</span></button>
+              <button class="sev-pick" data-sev="critical" onclick="pickSev(this)"><span class="sev sev-critical">CRITICAL</span></button>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Alert Description</label>
+            <textarea id="demo-desc" rows="4" placeholder="e.g. Unusual outbound traffic spike to unknown external IP from classified server..." style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:10px 12px;border-radius:8px;font-size:13px;outline:none;resize:vertical;line-height:1.6;font-family:inherit"></textarea>
+          </div>
+          <button class="btn btn-red" style="width:100%;justify-content:center;padding:11px;font-size:13px" onclick="runDemo()">
+            ⚡ Analyse Alert
+          </button>
+        </div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="card" id="demo-output" style="display:none">
+        <div class="card-title">Classification Result</div>
+        <div id="demo-result-body"></div>
+      </div>
+    </div>
+
+    <!-- SAMPLE ALERTS PANEL -->
+    <div class="card" style="height:fit-content">
+      <div class="card-title">Sample Test Alerts <span style="font-size:10px;font-weight:400;color:var(--text2)">— click any to load</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="sample-list"></div>
+    </div>
+  </div>
+
+  <!-- DEMO HISTORY -->
+  <div style="margin-top:20px">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      Analysis History
+      <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="clearHistory()">Clear</button>
+    </div>
+    <div id="demo-history" style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:12px;color:var(--text2);padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">No analyses yet — run your first alert above.</div>
+    </div>
+  </div>
+</div>
+
+<div id="page-pipeline" class="page">
+  <div class="page-header">
+    <div class="page-title">How It Works — NullThreat Pipeline</div>
+    <div class="page-sub">End-to-end AI threat classification pipeline</div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Data Flow</div>
+    <div class="pipe-wrap">
+      <div class="pipe-row">
+        <div class="pipe-step"><div class="pipe-box"><div class="pipe-icon">📄</div><div class="pipe-name">alerts.csv</div><div class="pipe-sub">40 security alerts from 4 sources</div></div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-box"><div class="pipe-icon">🤖</div><div class="pipe-name">Classifier</div><div class="pipe-sub">Demo: 25 keyword rules<br>Live: watsonx.ai LLM</div></div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-box"><div class="pipe-icon">🛡️</div><div class="pipe-name">MITRE Mapper</div><div class="pipe-sub">10 ATT&CK techniques covered</div></div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-box"><div class="pipe-icon">🔗</div><div class="pipe-name">Correlator</div><div class="pipe-sub">Group threats by technique → incidents</div></div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-box"><div class="pipe-icon">📊</div><div class="pipe-name">results.json</div><div class="pipe-sub">Machine-readable output</div></div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-box"><div class="pipe-icon">📋</div><div class="pipe-name">BLUF Report</div><div class="pipe-sub">Analyst-ready Markdown</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Run Commands</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:14px;font-family:monospace">
+          <div style="color:var(--text2);font-size:10px;margin-bottom:6px"># Step 1 — Classify (demo mode, no key needed)</div>
+          <div style="color:var(--green);font-size:12px">python src/classify_alerts.py</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:14px;font-family:monospace">
+          <div style="color:var(--text2);font-size:10px;margin-bottom:6px"># Step 2 — Generate BLUF report</div>
+          <div style="color:var(--green);font-size:12px">python src/generate_report.py</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:14px;font-family:monospace">
+          <div style="color:var(--text2);font-size:10px;margin-bottom:6px"># Switch to watsonx.ai mode</div>
+          <div style="color:var(--purple);font-size:12px">CLASSIFY_MODE=watsonx python src/classify_alerts.py</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Classification Modes</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--yellow);border-radius:8px;padding:14px">
+          <div style="color:var(--yellow);font-weight:700;font-size:12px;margin-bottom:6px">Demo Mode (default)</div>
+          <div style="color:var(--text2);font-size:12px;line-height:1.6">25-rule keyword engine. Fully offline. No API key needed. Instant results. Great for demos and development.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--purple);border-radius:8px;padding:14px">
+          <div style="color:var(--purple);font-weight:700;font-size:12px;margin-bottom:6px">Watsonx.ai Mode</div>
+          <div style="color:var(--text2);font-size:12px;line-height:1.6">IBM watsonx.ai · Llama-3-70b-Instruct · Zero-shot classification. Add WATSONX_API_KEY + WATSONX_PROJECT_ID to src/.env</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /layout -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Alert Detail</div>
+      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<div class="footer">NullThreat · IBM Bob AI Hackathon · Powered by IBM watsonx.ai &nbsp;|&nbsp; Made with IBM Bob</div>
+
+<script>
+
+// ── AUTHENTICATION ─────────────────────────────────────────────────────────
+function getUsers(){
+  try{return JSON.parse(localStorage.getItem("nullThreatUsers")||"[]");}
+  catch(e){return [];}
+}
+function saveUsers(users){localStorage.setItem("nullThreatUsers",JSON.stringify(users));}
+
+function switchAuth(mode){
+  const login = mode === "login";
+  document.getElementById("login-form").style.display = login ? "flex" : "none";
+  document.getElementById("register-form").style.display = login ? "none" : "flex";
+  document.getElementById("login-tab").classList.toggle("active",login);
+  document.getElementById("register-tab").classList.toggle("active",!login);
+  document.getElementById("login-error").textContent = "";
+  document.getElementById("register-error").textContent = "";
+}
+
+function showDashboardForUser(user){
+  document.getElementById("auth-screen").classList.add("hidden");
+  document.getElementById("user-name").textContent = user.name || user.email;
+}
+
+function handleRegister(e){
+  e.preventDefault();
+  const name = document.getElementById("register-name").value.trim();
+  const email = document.getElementById("register-email").value.trim().toLowerCase();
+  const password = document.getElementById("register-password").value;
+  const confirm = document.getElementById("register-confirm").value;
+  const error = document.getElementById("register-error");
+
+  if(password !== confirm){
+    error.textContent = "Passwords do not match.";
+    return;
+  }
+
+  const users = getUsers();
+  if(users.some(u => u.email === email)){
+    error.textContent = "An account with this email already exists.";
+    return;
+  }
+
+  const user = {name,email,password};
+  users.push(user);
+  saveUsers(users);
+  localStorage.setItem("nullThreatCurrentUser",JSON.stringify({name,email}));
+  showDashboardForUser(user);
+  toast("Account created successfully.");
+}
+
+function handleLogin(e){
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim().toLowerCase();
+  const password = document.getElementById("login-password").value;
+  const error = document.getElementById("login-error");
+  const user = getUsers().find(u => u.email === email && u.password === password);
+
+  if(!user){
+    error.textContent = "Invalid email or password.";
+    return;
+  }
+
+  localStorage.setItem("nullThreatCurrentUser",JSON.stringify({name:user.name,email:user.email}));
+  showDashboardForUser(user);
+  toast("Signed in successfully.");
+}
+
+function signOut(){
+  localStorage.removeItem("nullThreatCurrentUser");
+  document.getElementById("auth-screen").classList.remove("hidden");
+  document.getElementById("user-name").textContent = "";
+  document.getElementById("login-form").reset();
+  document.getElementById("register-form").reset();
+  switchAuth("login");
+  toast("Signed out successfully.");
+}
+
+(function(){
+  const saved = localStorage.getItem("nullThreatCurrentUser");
+  if(saved){
+    try{showDashboardForUser(JSON.parse(saved));}
+    catch(e){localStorage.removeItem("nullThreatCurrentUser");}
+  }
+})();
+
+// ── DATA ──────────────────────────────────────────────────────────────────
+const ALERTS=[
+  {id:"ALT-001",ts:"2024-11-01T00:12",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Scheduled backup job completed successfully on server BKP-04",reason:"No threat indicators matched; assessed as routine or benign activity."},
+  {id:"ALT-002",ts:"2024-11-01T01:05",src:"cyber sensor",sev:"low",cls:"false_positive",mitre:null,desc:"Port scan detected from internal host 10.4.2.17 — routine vulnerability scan by IT team",reason:"No threat indicators matched."},
+  {id:"ALT-003",ts:"2024-11-01T02:33",src:"SIEM",sev:"medium",cls:"real_threat",mitre:"T1078 - Valid Accounts",desc:"Multiple failed SSH login attempts on bastion host from IP 203.0.113.45",reason:"Repeated SSH failures suggest brute-force attempt"},
+  {id:"ALT-004",ts:"2024-11-01T03:14",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Threat intel feed flags IP 198.51.100.22 as known C2 server; traffic observed from workstation WS-118",reason:"Traffic to known C2 server detected"},
+  {id:"ALT-005",ts:"2024-11-01T04:08",src:"satellite feed",sev:"low",cls:"false_positive",mitre:null,desc:"Satellite uplink signal anomaly — attributed to scheduled maintenance window",reason:"No threat indicators matched."},
+  {id:"ALT-006",ts:"2024-11-01T05:47",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"User account password reset via self-service portal — routine activity",reason:"No threat indicators matched."},
+  {id:"ALT-007",ts:"2024-11-01T06:22",src:"cyber sensor",sev:"critical",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Outbound DNS queries to known DGA domain pattern detected from host 10.2.5.33",reason:"DGA domain pattern indicates C2 beaconing"},
+  {id:"ALT-008",ts:"2024-11-01T07:03",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Antivirus definitions updated on endpoint EP-204 — no threats found",reason:"No threat indicators matched."},
+  {id:"ALT-009",ts:"2024-11-01T08:19",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1566 - Phishing",desc:"Phishing email campaign targeting defense contractors detected; two internal users clicked malicious link",reason:"Phishing campaign or click-through detected"},
+  {id:"ALT-010",ts:"2024-11-01T09:44",src:"SIEM",sev:"medium",cls:"real_threat",mitre:"T1041 - Exfiltration Over C2 Channel",desc:"Unusual outbound traffic spike (2.3 GB) to external IP 192.0.2.88 from server SRV-07",reason:"Anomalous outbound volume to external IP"},
+  {id:"ALT-011",ts:"2024-11-01T10:05",src:"cyber sensor",sev:"low",cls:"false_positive",mitre:null,desc:"TLS certificate renewal detected on web gateway WG-01 — expected activity",reason:"No threat indicators matched."},
+  {id:"ALT-012",ts:"2024-11-01T11:27",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"System log rotation executed on database server DB-03 — routine maintenance",reason:"No threat indicators matched."},
+  {id:"ALT-013",ts:"2024-11-01T12:02",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1021.002 - Remote Services: SMB/Windows Admin Shares",desc:"Lateral movement indicators: SMB enumeration from WS-044 to 14 internal hosts within 3 minutes",reason:"SMB-based lateral movement across internal hosts"},
+  {id:"ALT-014",ts:"2024-11-01T13:15",src:"satellite feed",sev:"medium",cls:"false_positive",mitre:null,desc:"Encrypted satellite telemetry burst outside scheduled window — under investigation",reason:"No threat indicators matched."},
+  {id:"ALT-015",ts:"2024-11-01T14:33",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"New software package installed on workstation WS-201 via approved deployment tool",reason:"No threat indicators matched."},
+  {id:"ALT-016",ts:"2024-11-01T15:08",src:"intel report",sev:"critical",cls:"real_threat",mitre:"T1190 - Exploit Public-Facing Application",desc:"Zero-day exploit for VPN appliance publicly disclosed; unpatched device VPN-02 detected in environment",reason:"Unpatched device vulnerable to disclosed zero-day"},
+  {id:"ALT-017",ts:"2024-11-01T15:52",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"User logged in from approved remote access IP range — normal telework activity",reason:"No threat indicators matched."},
+  {id:"ALT-018",ts:"2024-11-01T16:40",src:"cyber sensor",sev:"medium",cls:"real_threat",mitre:"T1078 - Valid Accounts",desc:"Repeated authentication failures on domain controller DC-01 from service account SVC-BACKUP",reason:"Service account auth failures — possible misuse"},
+  {id:"ALT-019",ts:"2024-11-01T17:11",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Firewall rule set updated by network admin — change ticket CHG-4412 approved",reason:"No threat indicators matched."},
+  {id:"ALT-020",ts:"2024-11-01T18:03",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Nation-state actor TTPs observed in network traffic matching MITRE ATT&CK T1071",reason:"Nation-state TTP pattern matched in traffic"},
+  {id:"ALT-021",ts:"2024-11-01T18:55",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Disk utilization alert on server SRV-12 — threshold set too low; adjusted by admin",reason:"No threat indicators matched."},
+  {id:"ALT-022",ts:"2024-11-01T19:28",src:"cyber sensor",sev:"medium",cls:"real_threat",mitre:"T1059.001 - Command and Scripting Interpreter: PowerShell",desc:"Suspicious PowerShell execution with encoded command detected on workstation WS-077",reason:"Encoded PowerShell execution is suspicious"},
+  {id:"ALT-023",ts:"2024-11-01T20:14",src:"satellite feed",sev:"low",cls:"false_positive",mitre:null,desc:"Routine satellite pass telemetry received within expected parameters",reason:"No threat indicators matched."},
+  {id:"ALT-024",ts:"2024-11-01T20:59",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Group policy object updated by authorized domain admin — change logged",reason:"No threat indicators matched."},
+  {id:"ALT-025",ts:"2024-11-01T21:33",src:"cyber sensor",sev:"critical",cls:"real_threat",mitre:"T1041 - Exfiltration Over C2 Channel",desc:"Ransomware-like file encryption activity detected on file server FS-02; 1,200 files renamed in 60 seconds",reason:"Ransomware-like encryption activity detected"},
+  {id:"ALT-026",ts:"2024-11-01T22:07",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"NTP sync event recorded on network appliance — no anomaly detected",reason:"No threat indicators matched."},
+  {id:"ALT-027",ts:"2024-11-01T22:41",src:"intel report",sev:"high",cls:"real_threat",mitre:"T1003 - OS Credential Dumping",desc:"Credential dump tool (Mimikatz signature) detected in memory on host 10.3.1.55",reason:"Mimikatz signature indicates credential dumping"},
+  {id:"ALT-028",ts:"2024-11-01T23:05",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Scheduled task executed on workstation WS-190 — aligns with patching schedule",reason:"No threat indicators matched."},
+  {id:"ALT-029",ts:"2024-11-02T00:18",src:"cyber sensor",sev:"medium",cls:"real_threat",mitre:"T1071 - Application Layer Protocol",desc:"Beaconing behavior detected: host 10.5.2.11 makes HTTP GET requests every 60 seconds to 203.0.113.99",reason:"Periodic beaconing behaviour suggests C2 channel"},
+  {id:"ALT-030",ts:"2024-11-02T01:02",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"User account unlocked after standard lockout policy triggered — no suspicious context",reason:"No threat indicators matched."},
+  {id:"ALT-031",ts:"2024-11-02T01:47",src:"satellite feed",sev:"medium",cls:"false_positive",mitre:null,desc:"Ground station received signal from unregistered satellite frequency — reported to spectrum team",reason:"No threat indicators matched."},
+  {id:"ALT-032",ts:"2024-11-02T02:29",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Log forwarding agent restarted on collector node COL-06 — service watchdog triggered",reason:"No threat indicators matched."},
+  {id:"ALT-033",ts:"2024-11-02T03:11",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1041 - Exfiltration Over C2 Channel",desc:"Data exfiltration attempt: large archive file transferred to personal cloud storage from classified network segment",reason:"Data exfiltration attempt detected"},
+  {id:"ALT-034",ts:"2024-11-02T03:58",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"SSL inspection bypass allowed for approved video conferencing application — policy-compliant",reason:"No threat indicators matched."},
+  {id:"ALT-035",ts:"2024-11-02T04:44",src:"intel report",sev:"critical",cls:"real_threat",mitre:"T1190 - Exploit Public-Facing Application",desc:"Active exploitation of CVE-2024-1234 observed against exposed web application; reverse shell established",reason:"Active exploitation of public-facing application"},
+  {id:"ALT-036",ts:"2024-11-02T05:30",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"DHCP lease renewal for printer PR-08 — normal network event",reason:"No threat indicators matched."},
+  {id:"ALT-037",ts:"2024-11-02T06:17",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1068 - Exploitation for Privilege Escalation",desc:"Privilege escalation detected: user jsmith elevated to local admin on WS-133 without change ticket",reason:"Privilege escalation without change ticket"},
+  {id:"ALT-038",ts:"2024-11-02T07:03",src:"SIEM",sev:"low",cls:"false_positive",mitre:null,desc:"Email quarantine report generated — 12 spam messages blocked, no malicious attachments",reason:"No threat indicators matched."},
+  {id:"ALT-039",ts:"2024-11-02T07:49",src:"satellite feed",sev:"medium",cls:"false_positive",mitre:null,desc:"Satellite downlink authentication token mismatch — retry succeeded on second attempt",reason:"No threat indicators matched."},
+  {id:"ALT-040",ts:"2024-11-02T08:35",src:"cyber sensor",sev:"high",cls:"real_threat",mitre:"T1052.001 - Exfiltration Over Physical Medium: USB",desc:"Unauthorized USB mass storage device connected to air-gapped workstation WS-AG-05 in secure facility",reason:"Unauthorized USB device on sensitive system"}
+];
+
+const INCIDENTS=[
+  {id:"INC-001",tech:"T1071 - Application Layer Protocol",alerts:["ALT-004","ALT-007","ALT-020","ALT-029"],count:4,sev:"critical"},
+  {id:"INC-002",tech:"T1003 - OS Credential Dumping",alerts:["ALT-027"],count:1,sev:"high"},
+  {id:"INC-003",tech:"T1041 - Exfiltration Over C2 Channel",alerts:["ALT-010","ALT-025","ALT-033"],count:3,sev:"critical"},
+  {id:"INC-004",tech:"T1190 - Exploit Public-Facing Application",alerts:["ALT-016","ALT-035"],count:2,sev:"critical"},
+  {id:"INC-005",tech:"T1021.002 - Remote Services: SMB/Windows Admin Shares",alerts:["ALT-013"],count:1,sev:"high"},
+  {id:"INC-006",tech:"T1566 - Phishing",alerts:["ALT-009"],count:1,sev:"high"},
+  {id:"INC-007",tech:"T1059.001 - Command and Scripting Interpreter: PowerShell",alerts:["ALT-022"],count:1,sev:"medium"},
+  {id:"INC-008",tech:"T1068 - Exploitation for Privilege Escalation",alerts:["ALT-037"],count:1,sev:"high"},
+  {id:"INC-009",tech:"T1052.001 - Exfiltration Over Physical Medium: USB",alerts:["ALT-040"],count:1,sev:"high"},
+  {id:"INC-010",tech:"T1078 - Valid Accounts",alerts:["ALT-003","ALT-018"],count:2,sev:"medium"}
+];
+
+const MITRE_DATA=[
+  {id:"T1071",name:"Application Layer Protocol",count:4,sev:"critical"},
+  {id:"T1041",name:"Exfiltration Over C2 Channel",count:3,sev:"critical"},
+  {id:"T1190",name:"Exploit Public-Facing Application",count:2,sev:"critical"},
+  {id:"T1078",name:"Valid Accounts",count:2,sev:"medium"},
+  {id:"T1021.002",name:"SMB/Windows Admin Shares",count:1,sev:"high"},
+  {id:"T1566",name:"Phishing",count:1,sev:"high"},
+  {id:"T1003",name:"OS Credential Dumping",count:1,sev:"high"},
+  {id:"T1059.001",name:"PowerShell",count:1,sev:"medium"},
+  {id:"T1068",name:"Privilege Escalation",count:1,sev:"high"},
+  {id:"T1052.001",name:"USB Exfiltration",count:1,sev:"high"}
+];
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+const SEV_RANK={critical:0,high:1,medium:2,low:3};
+function sevBadge(s){const m={critical:"sev-critical",high:"sev-high",medium:"sev-medium",low:"sev-low"};return`<span class="sev ${m[s]||'sev-low'}">${s.toUpperCase()}</span>`}
+function srcTag(s){const m={SIEM:"src-SIEM","cyber sensor":"src-cyber","intel report":"src-intel","satellite feed":"src-sat"};return`<span class="src-tag ${m[s]||'src-SIEM'}">${s}</span>`}
+function clsBadge(c){return c==="real_threat"?`<span class="cls-badge cls-threat">THREAT</span>`:`<span class="cls-badge cls-fp">FALSE POS</span>`}
+function mitreBadge(m){return m?`<span class="mitre-tag">${m}</span>`:`<span style="color:var(--text2)">—</span>`}
+function sevDot(s){const c={critical:"#e05252",high:"#f0883e",medium:"#e3b341",low:"#3fb950"};return c[s]||"#8b949e"}
+
+// ── CLOCK ─────────────────────────────────────────────────────────────────
+function updateClock(){const n=new Date();document.getElementById("clock").textContent=n.toUTCString().replace("GMT","UTC")}
+updateClock();setInterval(updateClock,1000);
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function showPage(name,el){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.querySelectorAll(".mob-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-"+name).classList.add("active");
+  if(el){
+    if(el.classList.contains("nav-item")) el.classList.add("active");
+    if(el.classList.contains("mob-btn")) el.classList.add("active");
+    const matching=document.querySelector(`[data-page=${name}]`);
+    if(matching) matching.classList.add("active");
+    const mob=document.querySelector(`.mob-btn[onclick*="${name}"]`);
+    if(mob) mob.classList.add("active");
+  }
+}
+function goAlerts(filter){
+  showPage("alerts",document.querySelector("[data-page=alerts]"));
+  const btn=document.querySelector(`.fbtn.fa-${filter}`)||document.querySelector(".fbtn");
+  if(btn){setF(filter,btn)}
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function toast(msg,type="success"){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+// ── TIMELINE ─────────────────────────────────────────────────────────────
+(function(){
+  const tl=document.getElementById("tl-list");
+  const threats=ALERTS.filter(a=>a.cls==="real_threat").slice(-8).reverse();
+  threats.forEach(a=>{
+    const d=document.createElement("div");
+    d.className="tl-item";
+    d.innerHTML=`<div class="tl-dot" style="background:${sevDot(a.sev)}"></div>
+      <div class="tl-body">
+        <div class="tl-time">${a.ts} · ${a.src}</div>
+        <div class="tl-desc">${a.desc}</div>
+        ${a.mitre?`<div class="tl-mitre">${a.mitre}</div>`:""}
+      </div>
+      <div style="flex-shrink:0">${sevBadge(a.sev)}</div>`;
+    d.onclick=()=>openModal(a);
+    tl.appendChild(d);
+  });
+})();
+
+// ── ALERT TABLE ───────────────────────────────────────────────────────────
+let currentFilter="all",sortKey="sev",sortDir=1;
+
+function setF(f,btn){
+  currentFilter=f;
+  document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("active","fa-critical","fa-high","fa-medium","fa-low","fa-threat","fa-fp"));
+  btn.classList.add("active");
+  const map={critical:"fa-critical",high:"fa-high",medium:"fa-medium",low:"fa-low",threat:"fa-threat",fp:"fa-fp"};
+  if(map[f]) btn.classList.add(map[f]);
+  renderTable();
+}
+
+function sortBy(key){
+  if(sortKey===key) sortDir*=-1; else{sortKey=key;sortDir=1;}
+  document.querySelectorAll("th").forEach(t=>t.classList.remove("sorted"));
+  renderTable();
+}
+
+function renderTable(){
+  const q=(document.getElementById("search").value||"").toLowerCase();
+  let list=[...ALERTS];
+  if(currentFilter==="threat") list=list.filter(a=>a.cls==="real_threat");
+  else if(currentFilter==="fp") list=list.filter(a=>a.cls==="false_positive");
+  else if(["critical","high","medium","low"].includes(currentFilter)) list=list.filter(a=>a.sev===currentFilter);
+  if(q) list=list.filter(a=>[a.id,a.desc,a.src,a.mitre||"",a.reason].join(" ").toLowerCase().includes(q));
+  list.sort((a,b)=>{
+    let av=a[sortKey]||"",bv=b[sortKey]||"";
+    if(sortKey==="sev"){av=SEV_RANK[a.sev]||9;bv=SEV_RANK[b.sev]||9;return(av-bv)*sortDir;}
+    return av.localeCompare(bv)*sortDir;
+  });
+  const tb=document.getElementById("alerts-tbody");
+  tb.innerHTML="";
+  list.forEach(a=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td style="font-weight:700;color:var(--text3)">${a.id}</td>
+      <td style="color:var(--text2);font-size:11px">${a.ts}</td>
+      <td>${srcTag(a.src)}</td>
+      <td>${sevBadge(a.sev)}</td>
+      <td>${clsBadge(a.cls)}</td>
+      <td>${mitreBadge(a.mitre)}</td>
+      <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${a.desc}">${a.desc}</td>`;
+    tr.onclick=()=>openModal(a);
+    tb.appendChild(tr);
+  });
+  document.getElementById("row-count").textContent=`${list.length} result${list.length!==1?"s":""}`;
+}
+renderTable();
+
+// ── INCIDENTS ─────────────────────────────────────────────────────────────
+(function(){
+  const grid=document.getElementById("inc-grid");
+  const sc={critical:"sev-c",high:"sev-h",medium:"sev-m"};
+  INCIDENTS.forEach(inc=>{
+    const card=document.createElement("div");
+    card.className=`inc-card ${sc[inc.sev]||"sev-m"}`;
+    card.innerHTML=`
+      <div class="inc-id">${inc.id}</div>
+      <div class="inc-tech">${inc.tech}</div>
+      <div class="inc-row">
+        <div><div class="inc-big">${inc.count}</div><div class="inc-tiny">Alert${inc.count>1?"s":""}</div></div>
+        ${sevBadge(inc.sev)}
+      </div>
+      <div class="inc-tags">${inc.alerts.map(a=>`<span class="inc-tag">${a}</span>`).join("")}</div>`;
+    card.onclick=()=>{
+      const alerts=ALERTS.filter(a=>inc.alerts.includes(a.id));
+      openIncidentModal(inc,alerts);
+    };
+    grid.appendChild(card);
+  });
+})();
+
+// ── MITRE MATRIX ──────────────────────────────────────────────────────────
+(function(){
+  const g=document.getElementById("mitre-grid");
+  const maxCount=Math.max(...MITRE_DATA.map(m=>m.count));
+  MITRE_DATA.forEach(m=>{
+    const cell=document.createElement("div");
+    cell.className="mitre-cell";
+    cell.innerHTML=`
+      <div class="mitre-id">${m.id}</div>
+      <div class="mitre-name">${m.name}</div>
+      <div class="mitre-count">${m.count} alert${m.count>1?"s":""} · ${m.sev.toUpperCase()}</div>
+      <div class="mitre-bar"><div class="mitre-bar-fill" style="width:${(m.count/maxCount)*100}%"></div></div>`;
+    cell.onclick=()=>{
+      goAlerts("all");
+      setTimeout(()=>{
+        document.getElementById("search").value=m.id;
+        renderTable();
+        toast(`Filtered to ${m.id} — ${m.name}`);
+      },100);
+    };
+    g.appendChild(cell);
+  });
+})();
+
+// ── MODAL ─────────────────────────────────────────────────────────────────
+function openModal(a){
+  document.getElementById("modal-title").innerHTML=`${a.id} &nbsp;${sevBadge(a.sev)}`;
+  document.getElementById("modal-body").innerHTML=`
+    <div class="modal-row"><div class="modal-key">Timestamp</div><div class="modal-val">${a.ts}Z</div></div>
+    <div class="modal-row"><div class="modal-key">Source</div><div class="modal-val">${srcTag(a.src)}</div></div>
+    <div class="modal-row"><div class="modal-key">Classification</div><div class="modal-val">${clsBadge(a.cls)}</div></div>
+    <div class="modal-row"><div class="modal-key">Confidence</div><div class="modal-val" style="color:var(--green)">HIGH</div></div>
+    <hr class="modal-divider">
+    <div class="modal-row"><div class="modal-key">Description</div><div class="modal-val">${a.desc}</div></div>
+    <div class="modal-row"><div class="modal-key">Analyst Reason</div><div class="modal-val" style="color:var(--text2)">${a.reason}</div></div>
+    <hr class="modal-divider">
+    <div class="modal-row"><div class="modal-key">MITRE ATT&CK</div><div class="modal-val">${mitreBadge(a.mitre)}</div></div>
+    ${a.cls==="real_threat"?`<div style="margin-top:14px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:8px;padding:12px;font-size:12px;color:var(--red)">⚠ This alert is classified as a confirmed threat. Immediate analyst review recommended.</div>`:`<div style="margin-top:14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:8px;padding:12px;font-size:12px;color:var(--green)">✓ This alert was assessed as a false positive. No action required.</div>`}`;
+  document.getElementById("modal").classList.add("open");
+}
+
+function openIncidentModal(inc,alerts){
+  document.getElementById("modal-title").innerHTML=`${inc.id} &nbsp;${sevBadge(inc.sev)}`;
+  document.getElementById("modal-body").innerHTML=`
+    <div class="modal-row"><div class="modal-key">Technique</div><div class="modal-val"><span class="mitre-tag">${inc.tech}</span></div></div>
+    <div class="modal-row"><div class="modal-key">Alert Count</div><div class="modal-val" style="font-size:22px;font-weight:800;color:var(--text3)">${inc.count}</div></div>
+    <hr class="modal-divider">
+    <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Constituent Alerts</div>
+    ${alerts.map(a=>`
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="document.getElementById('modal').classList.remove('open');setTimeout(()=>openModal(ALERTS.find(x=>x.id==='${a.id}')),100)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;color:var(--text3)">${a.id}</span>${sevBadge(a.sev)}
+        </div>
+        <div style="font-size:12px;color:var(--text2)">${a.desc}</div>
+      </div>`).join("")}`;
+  document.getElementById("modal").classList.add("open");
+}
+
+function closeModal(e){if(e.target===document.getElementById("modal"))document.getElementById("modal").classList.remove("open")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("modal").classList.remove("open")});
+
+// ── LIVE DEMO PAGE ────────────────────────────────────────────────────────
+// 20 sample test alerts — mix of obvious threats, obvious false positives,
+// and a few tricky edge cases to make the demo interesting.
+const SAMPLES = [
+  // ── CLEAR THREATS ──
+  {label:"C2 Beaconing",sev:"critical",src:"cyber sensor",
+   desc:"Host 192.168.1.55 is making outbound HTTP GET requests every 30 seconds to IP 203.0.113.44 — consistent with C2 beaconing behaviour.",
+   expected:"real_threat"},
+  {label:"Ransomware Activity",sev:"critical",src:"cyber sensor",
+   desc:"File server FS-09 has renamed 3,400 files with .locked extension in under 2 minutes. Ransomware-like encryption activity confirmed.",
+   expected:"real_threat"},
+  {label:"Mimikatz Detected",sev:"high",src:"cyber sensor",
+   desc:"Mimikatz credential dumping tool signature detected in memory on workstation WS-201. Possible attacker harvesting domain credentials.",
+   expected:"real_threat"},
+  {label:"Phishing Click",sev:"high",src:"intel report",
+   desc:"Three employees in the finance department clicked a phishing link from a spoofed HR email. Malicious payload download attempted.",
+   expected:"real_threat"},
+  {label:"Lateral Movement",sev:"high",src:"cyber sensor",
+   desc:"SMB enumeration detected from WS-099 to 22 internal hosts within 5 minutes. Classic lateral movement pattern observed.",
+   expected:"real_threat"},
+  {label:"Zero-Day Exploit",sev:"critical",src:"intel report",
+   desc:"Active exploitation of CVE-2024-9871 observed on firewall FW-03. Attacker achieved unauthenticated remote code execution.",
+   expected:"real_threat"},
+  {label:"Privilege Escalation",sev:"high",src:"cyber sensor",
+   desc:"User account 'bsmith' elevated to Domain Admin without a change ticket. No scheduled maintenance window active.",
+   expected:"real_threat"},
+  {label:"Data Exfiltration",sev:"high",src:"SIEM",
+   desc:"Unusual outbound transfer: 8.4 GB sent from classified segment server SRV-classified-02 to personal Dropbox account over HTTPS.",
+   expected:"real_threat"},
+  {label:"PowerShell Encoded",sev:"medium",src:"cyber sensor",
+   desc:"PowerShell launched with -EncodedCommand flag on endpoint EP-330. Encoded payload decoded to a reverse shell stager.",
+   expected:"real_threat"},
+  {label:"USB on Air-Gap",sev:"high",src:"cyber sensor",
+   desc:"Unauthorized USB storage device plugged into air-gapped workstation AG-07 inside the secure operations centre.",
+   expected:"real_threat"},
+  // ── CLEAR FALSE POSITIVES ──
+  {label:"Scheduled Backup",sev:"low",src:"SIEM",
+   desc:"Nightly backup job completed successfully on server DB-12. All 240 GB backed up to offsite storage. No errors.",
+   expected:"false_positive"},
+  {label:"Password Reset",sev:"low",src:"SIEM",
+   desc:"User john.doe@corp.com reset their password via the self-service portal. No suspicious context. Normal activity.",
+   expected:"false_positive"},
+  {label:"AV Update",sev:"low",src:"SIEM",
+   desc:"Antivirus definitions updated on 340 endpoints. Version 2024.11.02. No threats detected during post-update scan.",
+   expected:"false_positive"},
+  {label:"Patch Deployment",sev:"low",src:"SIEM",
+   desc:"Monthly patch cycle completed. 47 Windows updates installed on servers SRV-01 through SRV-12 via WSUS. Approved change CHG-5501.",
+   expected:"false_positive"},
+  {label:"Certificate Renewal",sev:"low",src:"cyber sensor",
+   desc:"TLS certificate renewed on load balancer LB-02. New cert valid for 12 months. No interruption to service.",
+   expected:"false_positive"},
+  {label:"Satellite Maintenance",sev:"low",src:"satellite feed",
+   desc:"Satellite uplink signal variance detected during scheduled maintenance window 02:00–04:00 UTC. Expected behaviour.",
+   expected:"false_positive"},
+  {label:"DHCP Lease",sev:"low",src:"SIEM",
+   desc:"DHCP lease renewed for printer PR-14 in Building C. Standard 8-hour lease cycle. No anomaly.",
+   expected:"false_positive"},
+  {label:"Admin Login",sev:"low",src:"SIEM",
+   desc:"System administrator logged in from approved VPN IP 10.0.0.5 at 09:14 UTC. Matches approved remote working schedule.",
+   expected:"false_positive"},
+  // ── TRICKY EDGE CASES ──
+  {label:"Port Scan (IT Team)",sev:"medium",src:"cyber sensor",
+   desc:"Internal port scan detected from 10.10.10.5 across /24 subnet. Security team confirmed this was an authorised vulnerability assessment.",
+   expected:"false_positive"},
+  {label:"Failed Logins",sev:"medium",src:"SIEM",
+   desc:"Multiple failed SSH login attempts on bastion host from IP 45.33.32.156. 14 attempts in 3 minutes. Account not locked.",
+   expected:"real_threat"},
+];
+
+// Rule engine (same logic as classify_alerts.py demo mode)
+const DEMO_RULES = [
+  {kw:"c2",              label:"application_protocol", tech:"T1071 - Application Layer Protocol",     reason:"Traffic pattern consistent with C2 beaconing"},
+  {kw:"dga",             label:"application_protocol", tech:"T1071 - Application Layer Protocol",     reason:"DGA domain pattern indicates C2 activity"},
+  {kw:"beaconing",       label:"application_protocol", tech:"T1071 - Application Layer Protocol",     reason:"Periodic beaconing suggests C2 channel"},
+  {kw:"phishing",        label:"phishing",              tech:"T1566 - Phishing",                       reason:"Phishing campaign or click-through detected"},
+  {kw:"malicious link",  label:"phishing",              tech:"T1566 - Phishing",                       reason:"User interaction with malicious link"},
+  {kw:"lateral movement",label:"lateral_movement_smb",  tech:"T1021.002 - Remote Services: SMB/Windows Admin Shares", reason:"SMB-based lateral movement detected"},
+  {kw:"smb enumeration", label:"lateral_movement_smb",  tech:"T1021.002 - Remote Services: SMB/Windows Admin Shares", reason:"SMB enumeration across internal hosts"},
+  {kw:"mimikatz",        label:"credential_dumping",    tech:"T1003 - OS Credential Dumping",          reason:"Mimikatz signature — credential dumping"},
+  {kw:"credential dump", label:"credential_dumping",    tech:"T1003 - OS Credential Dumping",          reason:"In-memory credential dumping detected"},
+  {kw:"powershell",      label:"powershell",            tech:"T1059.001 - Command and Scripting Interpreter: PowerShell", reason:"Encoded PowerShell execution suspicious"},
+  {kw:"encoded command", label:"powershell",            tech:"T1059.001 - Command and Scripting Interpreter: PowerShell", reason:"Encoded command via PowerShell"},
+  {kw:"exfiltration",    label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Data exfiltration attempt detected"},
+  {kw:"dropbox",         label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Unauthorized cloud storage transfer"},
+  {kw:"usb",             label:"usb_exfil",             tech:"T1052.001 - Exfiltration Over Physical Medium: USB", reason:"Unauthorized USB device detected"},
+  {kw:"exploit",         label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Active exploitation of public app"},
+  {kw:"reverse shell",   label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Reverse shell established via exploit"},
+  {kw:"privilege escal", label:"privilege_escalation",  tech:"T1068 - Exploitation for Privilege Escalation", reason:"Privilege escalation without change ticket"},
+  {kw:"domain admin",    label:"privilege_escalation",  tech:"T1068 - Exploitation for Privilege Escalation", reason:"Unauthorized Domain Admin elevation"},
+  {kw:"ransomware",      label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Ransomware-like encryption activity"},
+  {kw:"locked extension",label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"File encryption consistent with ransomware"},
+  {kw:"zero-day",        label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Zero-day vulnerability exploited"},
+  {kw:"cve-",            label:"exploit_public_app",    tech:"T1190 - Exploit Public-Facing Application", reason:"Known CVE exploitation observed"},
+  {kw:"failed ssh",      label:"valid_accounts",        tech:"T1078 - Valid Accounts",                 reason:"SSH brute-force attempt"},
+  {kw:"multiple failed", label:"valid_accounts",        tech:"T1078 - Valid Accounts",                 reason:"Multiple auth failures — brute-force"},
+  {kw:"failed login",    label:"valid_accounts",        tech:"T1078 - Valid Accounts",                 reason:"Repeated login failures detected"},
+  {kw:"outbound traffic",label:"data_exfiltration",     tech:"T1041 - Exfiltration Over C2 Channel",   reason:"Anomalous outbound volume detected"},
+];
+
+function classifyDesc(desc){
+  const d = desc.toLowerCase();
+  for(const r of DEMO_RULES){
+    if(d.includes(r.kw)) return {cls:"real_threat", mitre:r.tech, reason:r.reason};
+  }
+  return {cls:"false_positive", mitre:null, reason:"No threat indicators matched; assessed as routine or benign activity."};
+}
+
+// Severity picker
+let demoSev = "low";
+function pickSev(btn){
+  document.querySelectorAll(".sev-pick").forEach(b=>b.classList.remove("active-pick"));
+  btn.classList.add("active-pick");
+  demoSev = btn.dataset.sev;
+}
+
+// Load sample into form
+function loadSample(s){
+  document.getElementById("demo-desc").value = s.desc;
+  document.getElementById("demo-src").value  = s.src;
+  demoSev = s.sev;
+  document.querySelectorAll(".sev-pick").forEach(b=>{
+    b.classList.toggle("active-pick", b.dataset.sev === s.sev);
+  });
+  document.getElementById("demo-desc").focus();
+  toast("Sample loaded — hit Analyse!");
+}
+
+// Run classification
+let historyLog = [];
+function runDemo(){
+  const desc = document.getElementById("demo-desc").value.trim();
+  const src  = document.getElementById("demo-src").value;
+  if(!desc){toast("Please enter an alert description first.", "warn"); return;}
+
+  // Animate button
+  const btn = document.querySelector("#page-demo .btn-red");
+  btn.innerHTML = '<span class="demo-spinner"></span> Analysing…';
+  btn.disabled = true;
+
+  // Simulate a short delay for realism
+  setTimeout(()=>{
+    const result = classifyDesc(desc);
+    showDemoResult(desc, src, demoSev, result);
+    addToHistory(desc, src, demoSev, result);
+    btn.innerHTML = "⚡ Analyse Alert";
+    btn.disabled = false;
+  }, 900);
+}
+
+function showDemoResult(desc, src, sev, result){
+  const isThreat = result.cls === "real_threat";
+  const out = document.getElementById("demo-output");
+  const body = document.getElementById("demo-result-body");
+  out.style.display = "block";
+
+  body.innerHTML = `
+    <div class="result-verdict ${isThreat?'threat':'fp'}">
+      <div class="verdict-icon">${isThreat?"🚨":"✅"}</div>
+      <div>
+        <div class="verdict-label ${isThreat?'threat':'fp'}">${isThreat?"CONFIRMED THREAT":"FALSE POSITIVE"}</div>
+        <div class="verdict-title">${isThreat?"Immediate review required":"No action needed"}</div>
+      </div>
+    </div>
+    <div class="result-grid">
+      <div class="result-cell">
+        <div class="result-cell-key">Classification</div>
+        <div class="result-cell-val">${clsBadge(result.cls)}</div>
+      </div>
+      <div class="result-cell">
+        <div class="result-cell-key">Severity</div>
+        <div class="result-cell-val">${sevBadge(sev)}</div>
+      </div>
+      <div class="result-cell">
+        <div class="result-cell-key">Source</div>
+        <div class="result-cell-val">${srcTag(src)}</div>
+      </div>
+      <div class="result-cell">
+        <div class="result-cell-key">Confidence</div>
+        <div class="result-cell-val" style="color:var(--green)">HIGH</div>
+      </div>
+    </div>
+    <div class="result-cell" style="margin-bottom:10px">
+      <div class="result-cell-key">MITRE ATT&CK Technique</div>
+      <div class="result-cell-val" style="margin-top:5px">${result.mitre ? `<span class="mitre-tag" style="font-size:12px;padding:4px 10px">${result.mitre}</span>` : '<span style="color:var(--text2)">— Not applicable</span>'}</div>
+    </div>
+    <div class="result-cell">
+      <div class="result-cell-key">Analyst Reason</div>
+      <div class="result-cell-val" style="color:var(--text2);font-weight:400;font-size:12px;margin-top:4px">${result.reason}</div>
+    </div>`;
+
+  out.scrollIntoView({behavior:"smooth", block:"nearest"});
+  toast(isThreat ? "Threat detected!" : "False positive — no action needed.", isThreat?"warn":"success");
+}
+
+function addToHistory(desc, src, sev, result){
+  const isThreat = result.cls === "real_threat";
+  historyLog.unshift({desc, src, sev, result, ts: new Date().toLocaleTimeString()});
+  const h = document.getElementById("demo-history");
+  if(historyLog.length === 1) h.innerHTML = ""; // remove placeholder
+  const item = document.createElement("div");
+  item.className = "history-item";
+  item.innerHTML = `
+    <div class="history-dot" style="background:${isThreat?'var(--red)':'var(--green)'}"></div>
+    <div class="history-body">
+      <div class="history-desc" title="${desc}">${desc}</div>
+      <div class="history-meta">
+        <span>${isThreat?"🚨 THREAT":"✅ FALSE POS"}</span>
+        <span>${srcTag(src)}</span>
+        <span>${sevBadge(sev)}</span>
+        ${result.mitre ? `<span class="mitre-tag">${result.mitre}</span>` : ""}
+        <span style="color:var(--text2)">${historyLog[0].ts}</span>
+      </div>
+    </div>`;
+  h.insertBefore(item, h.firstChild);
+}
+
+function clearHistory(){
+  historyLog = [];
+  document.getElementById("demo-history").innerHTML =
+    '<div style="font-size:12px;color:var(--text2);padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">No analyses yet — run your first alert above.</div>';
+  toast("History cleared.");
+}
+
+// Render sample alerts panel
+(function(){
+  const list = document.getElementById("sample-list");
+  const THREAT_EXPECTED = {real_threat:true, false_positive:false};
+  SAMPLES.forEach(s=>{
+    const div = document.createElement("div");
+    div.className = "sample-item";
+    div.innerHTML = `
+      <div class="sample-top">
+        ${sevBadge(s.sev)}
+        <span style="font-size:11px;font-weight:700;color:var(--text3)">${s.label}</span>
+        <span style="margin-left:auto;font-size:10px;color:${s.expected==='real_threat'?'var(--red)':'var(--green)'}">${s.expected==='real_threat'?"THREAT":"BENIGN"}</span>
+      </div>
+      <div class="sample-desc">${s.desc.length>100?s.desc.slice(0,100)+'…':s.desc}</div>`;
+    div.onclick = () => loadSample(s);
+    list.appendChild(div);
+  });
+})();
+</script>
+</body>
+</html>
