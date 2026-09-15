@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NullThreat — AI Threat Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -16,10 +17,10 @@
   --blue:#79c0ff;--blue-bg:#0d2137;
   --purple:#a371f7;--purple-bg:#1f1435;--purple-border:#3d2a6e;
 }
-body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:'Inter',-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
 /* ── TOPBAR ── */
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200}
+.topbar{background:var(--surface);border-bottom:1px solid rgba(121,192,255,0.4);box-shadow:0 1px 20px rgba(121,192,255,0.08);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200}
 .logo{font-size:20px;font-weight:800;color:var(--text3);letter-spacing:2px}
 .logo span{color:var(--red)}
 .topbar-right{display:flex;align-items:center;gap:16px}
@@ -50,7 +51,7 @@ body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--
 .page-sub{font-size:13px;color:var(--text2)}
 
 /* ── BLUF BANNER ── */
-.bluf{background:linear-gradient(135deg,#1a0a0a,#2a0f0f);border:1px solid var(--red-border);border-left:4px solid var(--red);border-radius:10px;padding:18px 22px;margin-bottom:24px;position:relative;overflow:hidden}
+.bluf{background:linear-gradient(135deg,#1e0808,#2a0f0f 60%,#160a2a 100%);border:1px solid var(--red-border);border-left:4px solid var(--red);border-radius:10px;padding:18px 22px;margin-bottom:24px;position:relative;overflow:hidden}
 .bluf::before{content:'';position:absolute;top:0;right:0;width:200px;height:100%;background:linear-gradient(90deg,transparent,rgba(224,82,82,.04));pointer-events:none}
 .bluf-label{font-size:10px;font-weight:700;color:var(--red);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .bluf-text{font-size:13.5px;color:var(--text3);line-height:1.75}
@@ -64,13 +65,17 @@ body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--
 
 /* ── STAT CARDS ── */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--border);border-radius:10px;padding:18px 20px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;position:relative;overflow:hidden;box-shadow:0 0 16px rgba(121,192,255,0.06)}
 .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
-.stat-card.c-red::after{background:var(--red)}
-.stat-card.c-orange::after{background:var(--orange)}
-.stat-card.c-green::after{background:var(--green)}
-.stat-card.c-purple::after{background:var(--purple)}
-.stat-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.stat-card.c-red{border-top-color:var(--red)}.stat-card.c-red::after{background:var(--red)}
+.stat-card.c-orange{border-top-color:var(--orange)}.stat-card.c-orange::after{background:var(--orange)}
+.stat-card.c-green{border-top-color:var(--green)}.stat-card.c-green::after{background:var(--green)}
+.stat-card.c-purple{border-top-color:var(--purple)}.stat-card.c-purple::after{background:var(--purple)}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 0 24px rgba(121,192,255,0.18);border-color:var(--border2)}
+.stat-card.c-red:hover{box-shadow:0 0 24px rgba(224,82,82,0.2)}
+.stat-card.c-orange:hover{box-shadow:0 0 24px rgba(240,136,62,0.2)}
+.stat-card.c-green:hover{box-shadow:0 0 24px rgba(63,185,80,0.2)}
+.stat-card.c-purple:hover{box-shadow:0 0 24px rgba(163,113,247,0.2)}
 .stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .stat-icon{font-size:22px}
 .stat-trend{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
@@ -104,7 +109,7 @@ body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--
 .hbar-key{color:var(--text2)}
 .hbar-val{color:var(--text3);font-weight:600}
 .hbar-track{background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
-.hbar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.hbar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px currentColor}
 
 /* ── TIMELINE ── */
 .timeline{display:flex;flex-direction:column;gap:0}
@@ -177,11 +182,11 @@ tbody tr:hover td{background:#161b22}
 
 /* ── INCIDENTS ── */
 .inc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-bottom:24px}
-.inc-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;cursor:pointer;transition:all .2s;border-top:3px solid var(--border)}
+.inc-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;border-top:3px solid var(--border)}
 .inc-card.sev-c{border-top-color:var(--red)}
 .inc-card.sev-h{border-top-color:var(--orange)}
 .inc-card.sev-m{border-top-color:var(--yellow)}
-.inc-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.inc-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.4);border-color:var(--border2)}
 .inc-id{font-size:10px;color:var(--text2);font-weight:700;letter-spacing:1px;margin-bottom:6px}
 .inc-tech{font-size:12px;color:var(--blue);font-weight:700;line-height:1.4;margin-bottom:12px}
 .inc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
