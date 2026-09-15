@@ -1,0 +1,9 @@
+berth_id,crane_count,max_vessel_size,current_status,next_available_time
+BERTH-B1,6,ultra_large,free,2025-10-10 03:00:00
+BERTH-B2,6,ultra_large,occupied,2025-10-10 05:00:00
+BERTH-B3,5,large,free,2025-10-10 03:00:00
+BERTH-B4,5,large,occupied,2025-10-10 06:00:00
+BERTH-B5,4,large,free,2025-10-10 03:00:00
+BERTH-B6,3,medium,free,2025-10-10 03:00:00
+BERTH-B7,2,small,maintenance,2025-10-11 00:00:00
+BERTH-B8,6,ultra_large,occupied,2025-10-10 08:00:00
