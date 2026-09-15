@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PortWise — Container Congestion Predictor</title>
+
+<!-- Leaflet CSS for the satellite map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -43,7 +47,7 @@
     height: 60px;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
   }
   .logo { display: flex; align-items: center; gap: 10px; }
   .logo-icon {
@@ -79,6 +83,78 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
   }
+
+  /* ── Satellite Map ── */
+  .map-section {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  #port-map {
+    width: 100%;
+    height: 480px;
+  }
+  .map-overlay {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 900;
+    background: rgba(11,17,32,0.88);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    backdrop-filter: blur(6px);
+    min-width: 200px;
+  }
+  .map-overlay-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .map-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .map-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .map-badge {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    z-index: 900;
+    background: rgba(11,17,32,0.88);
+    border: 1px solid rgba(245,158,11,0.4);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: #fbbf24;
+    font-weight: 600;
+    backdrop-filter: blur(6px);
+  }
+  /* Override Leaflet popup style to match dark theme */
+  .leaflet-popup-content-wrapper {
+    background: #1a2640;
+    color: #e2e8f0;
+    border: 1px solid #243351;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    font-size: 12px;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  .leaflet-popup-tip { background: #1a2640; }
+  .leaflet-popup-content { margin: 10px 14px; }
+  .popup-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .popup-row { display: flex; justify-content: space-between; gap: 16px; color: #7a90b0; }
+  .popup-row span:last-child { color: #e2e8f0; font-weight: 600; }
+  .popup-status-free    { color: #22c55e; font-weight: 700; }
+  .popup-status-occ     { color: #3b82f6; font-weight: 700; }
+  .popup-status-maint   { color: #ef4444; font-weight: 700; }
 
   /* ── Layout ── */
   .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
@@ -140,17 +216,6 @@
     border-radius: 0 4px 4px 0;
     color: #fde68a;
   }
-  .no-hotspot {
-    background: rgba(34,197,94,0.08);
-    border: 1px solid rgba(34,197,94,0.3);
-    border-radius: 10px;
-    padding: 14px 20px;
-    color: var(--green);
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
 
   /* ── Berth grid ── */
   .berth-grid {
@@ -174,12 +239,9 @@
   .berth-name { font-weight: 700; font-size: 14px; }
   .berth-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .status-badge {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 10px; font-weight: 600;
+    padding: 3px 8px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
   .status-free { background: rgba(34,197,94,0.15); color: var(--green); }
   .status-occupied { background: rgba(59,130,246,0.15); color: var(--accent); }
@@ -187,119 +249,67 @@
   .berth-queue { padding: 10px 0; }
   .queue-item {
     padding: 7px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; gap: 10px;
     border-bottom: 1px solid rgba(36,51,81,0.6);
     font-size: 12px;
   }
   .queue-item:last-child { border-bottom: none; }
   .queue-num {
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    background: var(--border);
-    color: var(--muted);
-    font-size: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--border); color: var(--muted); font-size: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .queue-vessel { font-weight: 600; flex: 0 0 68px; }
   .queue-time { color: var(--muted); flex: 1; }
-  .priority-dot {
-    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  }
+  .priority-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .dot-critical { background: var(--critical); }
   .dot-priority { background: var(--priority); }
   .dot-standard { background: var(--standard); }
-  .queue-wait {
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
+  .queue-wait { font-size: 10px; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; }
   .wait-ok { background: rgba(34,197,94,0.12); color: var(--green); }
   .wait-delay { background: rgba(239,68,68,0.12); color: #fca5a5; }
 
   /* ── At-risk table ── */
   .table-wrap { overflow-x: auto; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th {
-    background: var(--surface);
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 10px 14px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
+    background: var(--surface); color: var(--muted); font-weight: 600;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
   }
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
   tbody tr:hover { background: rgba(255,255,255,0.03); }
-  tbody td {
-    padding: 10px 14px;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
+  tbody td { padding: 10px 14px; vertical-align: middle; white-space: nowrap; }
   .pill {
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
+    display: inline-block; padding: 2px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
   }
   .pill-critical { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.3); }
   .pill-priority { background: rgba(217,119,6,0.15); color: #fcd34d; border: 1px solid rgba(217,119,6,0.3); }
   .pill-standard { background: rgba(37,99,235,0.15); color: #93c5fd; border: 1px solid rgba(37,99,235,0.3); }
-  .pill-on { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
   .pill-delayed { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
   .wait-text-long { color: var(--red); font-weight: 600; }
   .wait-text-med  { color: var(--yellow); font-weight: 600; }
   .wait-text-ok   { color: var(--green); }
 
-  /* ── Chart bars (pure CSS) ── */
-  .chart-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+  /* ── Charts ── */
+  .chart-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .chart-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px;
   }
   .chart-card-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
   .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; }
   .bar-label { width: 80px; flex-shrink: 0; color: var(--muted); text-align: right; }
   .bar-track { flex: 1; background: var(--border); border-radius: 4px; height: 10px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .bar-fill { height: 100%; border-radius: 4px; }
   .bar-val { width: 50px; flex-shrink: 0; font-weight: 600; }
-
-  /* ── Wait distribution donut (SVG) ── */
-  .donut-wrap { display: flex; align-items: center; gap: 20px; }
-  .donut-legend { font-size: 12px; }
-  .legend-item { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
   /* ── Footer ── */
   footer {
-    text-align: center;
-    padding: 24px 32px;
-    font-size: 11px;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-    margin-top: 40px;
+    text-align: center; padding: 24px 32px; font-size: 11px;
+    color: var(--muted); border-top: 1px solid var(--border); margin-top: 40px;
   }
 
   @media (max-width: 700px) {
@@ -307,7 +317,16 @@
     .main { padding: 16px; }
     .hero { padding: 20px 16px; }
     .chart-section { grid-template-columns: 1fr; }
+    #port-map { height: 320px; }
   }
+
+  /* Vessel icon pulse animation */
+  @keyframes pulse {
+    0%   { transform: scale(1);   opacity: 1; }
+    50%  { transform: scale(1.5); opacity: 0.6; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+  .vessel-pulse { animation: pulse 2s infinite; }
 </style>
 </head>
 <body>
@@ -322,14 +341,40 @@
   </div>
   <div class="header-meta">
     <strong>72-Hour Operations Window</strong><br>
-    15 Jul 2025 04:30 → 17 Jul 2025 09:00
+    15 Jul 2025 04:30 &rarr; 17 Jul 2025 09:00
   </div>
 </header>
 
 <div class="hero">
   <div class="hero-badge">Live Operations Dashboard</div>
   <h1>Port Operations Command Centre</h1>
-  <p>Proactive berth congestion prediction and AI-optimised vessel assignment — replacing reactive spreadsheet management with a real-time 72-hour planning horizon.</p>
+  <p>Proactive berth congestion prediction and AI-optimised vessel assignment &mdash; replacing reactive spreadsheet management with a real-time 72-hour planning horizon.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SATELLITE MAP SECTION
+     Centred on the Port of Los Angeles / Long Beach
+     ═══════════════════════════════════════════════════ -->
+<div class="map-section">
+  <div id="port-map"></div>
+
+  <!-- Overlay legend -->
+  <div class="map-overlay">
+    <div class="map-overlay-title">Map Legend</div>
+    <div class="map-legend-row"><div class="map-dot" style="background:#22c55e"></div> Free berth</div>
+    <div class="map-legend-row"><div class="map-dot" style="background:#3b82f6"></div> Occupied berth</div>
+    <div class="map-legend-row"><div class="map-dot" style="background:#ef4444"></div> Maintenance</div>
+    <div class="map-legend-row"><div class="map-dot" style="background:#dc2626; box-shadow:0 0 6px #dc2626"></div> Critical vessel</div>
+    <div class="map-legend-row"><div class="map-dot" style="background:#d97706; box-shadow:0 0 6px #d97706"></div> Priority vessel</div>
+    <div class="map-legend-row"><div class="map-dot" style="background:#60a5fa"></div> Standard vessel</div>
+    <div class="map-legend-row" style="margin-top:6px; padding-top:6px; border-top:1px solid #243351">
+      <svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/></svg>
+      Approach path
+    </div>
+  </div>
+
+  <!-- Hotspot badge -->
+  <div class="map-badge">&#9888; 1 Congestion Hotspot Detected &mdash; Deep Water Zone</div>
 </div>
 
 <div class="main">
@@ -382,75 +427,46 @@
   <!-- Charts -->
   <div class="section-title" style="margin-top:28px">Analytics</div>
   <div class="chart-section">
-
-    <!-- TEU by priority -->
     <div class="chart-card">
       <div class="chart-card-title">Total TEU Volume by Priority</div>
       <div class="bar-row">
         <div class="bar-label">Critical</div>
-        <div class="bar-track"><div class="bar-fill" style="width:100%; background:#dc2626;"></div></div>
-        <div class="bar-val" style="color:#fca5a5;">23,200</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div>
+        <div class="bar-val" style="color:#fca5a5">23,200</div>
       </div>
       <div class="bar-row">
         <div class="bar-label">Priority</div>
-        <div class="bar-track"><div class="bar-fill" style="width:88%; background:#d97706;"></div></div>
-        <div class="bar-val" style="color:#fcd34d;">26,650</div>
+        <div class="bar-track"><div class="bar-fill" style="width:88%;background:#d97706"></div></div>
+        <div class="bar-val" style="color:#fcd34d">26,650</div>
       </div>
       <div class="bar-row">
         <div class="bar-label">Standard</div>
-        <div class="bar-track"><div class="bar-fill" style="width:72%; background:#2563eb;"></div></div>
-        <div class="bar-val" style="color:#93c5fd;">21,630</div>
+        <div class="bar-track"><div class="bar-fill" style="width:72%;background:#2563eb"></div></div>
+        <div class="bar-val" style="color:#93c5fd">21,630</div>
       </div>
     </div>
-
-    <!-- Berth utilisation -->
     <div class="chart-card">
       <div class="chart-card-title">Berth Queue Depth (vessels assigned)</div>
-      <div class="bar-row">
-        <div class="bar-label">BERTH-01</div>
-        <div class="bar-track"><div class="bar-fill" style="width:83%; background:#3b82f6;"></div></div>
-        <div class="bar-val" style="color:#93c5fd;">5</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">BERTH-02</div>
-        <div class="bar-track"><div class="bar-fill" style="width:67%; background:#3b82f6;"></div></div>
-        <div class="bar-val" style="color:#93c5fd;">4</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">BERTH-03</div>
-        <div class="bar-track"><div class="bar-fill" style="width:100%; background:#3b82f6;"></div></div>
-        <div class="bar-val" style="color:#93c5fd;">6</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">BERTH-04</div>
-        <div class="bar-track"><div class="bar-fill" style="width:83%; background:#3b82f6;"></div></div>
-        <div class="bar-val" style="color:#93c5fd;">5</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">BERTH-06</div>
-        <div class="bar-track"><div class="bar-fill" style="width:67%; background:#3b82f6;"></div></div>
-        <div class="bar-val" style="color:#93c5fd;">4</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">BERTH-07</div>
-        <div class="bar-track"><div class="bar-fill" style="width:100%; background:#3b82f6;"></div></div>
-        <div class="bar-val" style="color:#93c5fd;">6</div>
-      </div>
+      <div class="bar-row"><div class="bar-label">BERTH-01</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">5</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-02</div><div class="bar-track"><div class="bar-fill" style="width:67%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">4</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-03</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">6</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-04</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">5</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-06</div><div class="bar-track"><div class="bar-fill" style="width:67%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">4</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-07</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">6</div></div>
     </div>
-
   </div>
 
   <!-- Hotspot -->
   <div class="section-title">Congestion Hotspot Alerts</div>
   <div class="hotspot-card">
-    <div class="hotspot-icon">⚠️</div>
+    <div class="hotspot-icon">&#9888;&#65039;</div>
     <div style="flex:1">
-      <div class="hotspot-title">MEDIUM SEVERITY — Deep Water Berths</div>
+      <div class="hotspot-title">MEDIUM SEVERITY &mdash; Deep Water Berths</div>
       <div class="hotspot-body">
-        <span>Window:</span> 15 Jul 04:30 → 15 Jul 10:30 &nbsp;|&nbsp;
+        <span>Window:</span> 15 Jul 04:30 &rarr; 15 Jul 10:30 &nbsp;|&nbsp;
         <span>Vessels arriving:</span> 2 &nbsp;|&nbsp;
         <span>Effective berths available:</span> 1.5 &nbsp;|&nbsp;
-        <span>Utilisation ratio:</span> <strong style="color:#fbbf24">1.33</strong> <span>(target ≤ 1.0)</span>
+        <span>Utilisation ratio:</span> <strong style="color:#fbbf24">1.33</strong> <span>(target &le; 1.0)</span>
       </div>
       <div class="hotspot-action">
         Supervisor action: Monitor closely. Ensure maintenance berths are returned to service on schedule and confirm no further vessels are added to this window.
@@ -462,108 +478,66 @@
   <div class="section-title">Live Berth Schedules</div>
   <div class="berth-grid">
 
-    <!-- BERTH-01 -->
     <div class="berth-card">
-      <div class="berth-header">
-        <div>
-          <div class="berth-name">BERTH-01</div>
-          <div class="berth-meta">Large · 4 cranes</div>
-        </div>
-        <span class="status-badge status-occupied">Occupied</span>
-      </div>
+      <div class="berth-header"><div><div class="berth-name">BERTH-01</div><div class="berth-meta">Large &middot; 4 cranes</div></div><span class="status-badge status-occupied">Occupied</span></div>
       <div class="berth-queue">
-        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-002</div><div class="queue-time">08:00 – 16:00</div><div class="queue-wait wait-delay">+2h</div></div>
-        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-009</div><div class="queue-time">16:00 – 00:00</div><div class="queue-wait wait-delay">+3h</div></div>
+        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-002</div><div class="queue-time">08:00 &ndash; 16:00</div><div class="queue-wait wait-delay">+2h</div></div>
+        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-009</div><div class="queue-time">16:00 &ndash; 00:00</div><div class="queue-wait wait-delay">+3h</div></div>
         <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-019</div><div class="queue-time">Jul 16 01:30</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">4</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-026</div><div class="queue-time">Jul 16 11:15</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">5</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-020</div><div class="queue-time">Jul 16 19:15</div><div class="queue-wait wait-delay">+16.5h</div></div>
       </div>
     </div>
 
-    <!-- BERTH-02 -->
     <div class="berth-card">
-      <div class="berth-header">
-        <div>
-          <div class="berth-name">BERTH-02</div>
-          <div class="berth-meta">Ultra Large · 6 cranes</div>
-        </div>
-        <span class="status-badge status-free">Free</span>
-      </div>
+      <div class="berth-header"><div><div class="berth-name">BERTH-02</div><div class="berth-meta">Ultra Large &middot; 6 cranes</div></div><span class="status-badge status-free">Free</span></div>
       <div class="berth-queue">
-        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-004</div><div class="queue-time">08:15 – 16:15</div><div class="queue-wait wait-ok">On time</div></div>
-        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-016</div><div class="queue-time">21:00 – 05:00</div><div class="queue-wait wait-ok">On time</div></div>
+        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-004</div><div class="queue-time">08:15 &ndash; 16:15</div><div class="queue-wait wait-ok">On time</div></div>
+        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-016</div><div class="queue-time">21:00 &ndash; 05:00</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-028</div><div class="queue-time">Jul 16 14:00</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">4</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-024</div><div class="queue-time">Jul 16 22:00</div><div class="queue-wait wait-delay">+13.5h</div></div>
       </div>
     </div>
 
-    <!-- BERTH-03 -->
     <div class="berth-card">
-      <div class="berth-header">
-        <div>
-          <div class="berth-name">BERTH-03</div>
-          <div class="berth-meta">Medium · 3 cranes</div>
-        </div>
-        <span class="status-badge status-free">Free</span>
-      </div>
+      <div class="berth-header"><div><div class="berth-name">BERTH-03</div><div class="berth-meta">Medium &middot; 3 cranes</div></div><span class="status-badge status-free">Free</span></div>
       <div class="berth-queue">
-        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-001</div><div class="queue-time">04:30 – 12:30</div><div class="queue-wait wait-ok">On time</div></div>
-        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-005</div><div class="queue-time">12:30 – 20:30</div><div class="queue-wait wait-delay">+3h</div></div>
-        <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-008</div><div class="queue-time">20:30 – 04:30</div><div class="queue-wait wait-delay">+7.75h</div></div>
+        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-001</div><div class="queue-time">04:30 &ndash; 12:30</div><div class="queue-wait wait-ok">On time</div></div>
+        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-005</div><div class="queue-time">12:30 &ndash; 20:30</div><div class="queue-wait wait-delay">+3h</div></div>
+        <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-008</div><div class="queue-time">20:30 &ndash; 04:30</div><div class="queue-wait wait-delay">+7.75h</div></div>
         <div class="queue-item"><div class="queue-num">4</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-012</div><div class="queue-time">Jul 16 04:30</div><div class="queue-wait wait-delay">+12.25h</div></div>
         <div class="queue-item"><div class="queue-num">5</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-015</div><div class="queue-time">Jul 16 12:30</div><div class="queue-wait wait-delay">+16.75h</div></div>
         <div class="queue-item"><div class="queue-num">6</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-022</div><div class="queue-time">Jul 16 20:30</div><div class="queue-wait wait-delay">+15h</div></div>
       </div>
     </div>
 
-    <!-- BERTH-04 -->
     <div class="berth-card">
-      <div class="berth-header">
-        <div>
-          <div class="berth-name">BERTH-04</div>
-          <div class="berth-meta">Large · 5 cranes</div>
-        </div>
-        <span class="status-badge status-occupied">Occupied</span>
-      </div>
+      <div class="berth-header"><div><div class="berth-name">BERTH-04</div><div class="berth-meta">Large &middot; 5 cranes</div></div><span class="status-badge status-occupied">Occupied</span></div>
       <div class="berth-queue">
-        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-007</div><div class="queue-time">11:20 – 19:20</div><div class="queue-wait wait-ok">On time</div></div>
-        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-013</div><div class="queue-time">19:20 – 03:20</div><div class="queue-wait wait-delay">+1.8h</div></div>
+        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-007</div><div class="queue-time">11:20 &ndash; 19:20</div><div class="queue-wait wait-ok">On time</div></div>
+        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-013</div><div class="queue-time">19:20 &ndash; 03:20</div><div class="queue-wait wait-delay">+1.8h</div></div>
         <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-023</div><div class="queue-time">Jul 16 07:00</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">4</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-017</div><div class="queue-time">Jul 16 15:00</div><div class="queue-wait wait-delay">+16.5h</div></div>
         <div class="queue-item"><div class="queue-num">5</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-025</div><div class="queue-time">Jul 16 23:00</div><div class="queue-wait wait-delay">+13h</div></div>
       </div>
     </div>
 
-    <!-- BERTH-06 -->
     <div class="berth-card">
-      <div class="berth-header">
-        <div>
-          <div class="berth-name">BERTH-06</div>
-          <div class="berth-meta">Ultra Large · 6 cranes</div>
-        </div>
-        <span class="status-badge status-occupied">Occupied</span>
-      </div>
+      <div class="berth-header"><div><div class="berth-name">BERTH-06</div><div class="berth-meta">Ultra Large &middot; 6 cranes</div></div><span class="status-badge status-occupied">Occupied</span></div>
       <div class="berth-queue">
-        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-011</div><div class="queue-time">15:00 – 23:00</div><div class="queue-wait wait-ok">On time</div></div>
+        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-011</div><div class="queue-time">15:00 &ndash; 23:00</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-critical"></div><div class="queue-vessel">VSL-021</div><div class="queue-time">Jul 16 04:00</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-priority"></div><div class="queue-vessel">VSL-030</div><div class="queue-time">Jul 16 17:00</div><div class="queue-wait wait-ok">On time</div></div>
         <div class="queue-item"><div class="queue-num">4</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-029</div><div class="queue-time">Jul 17 01:00</div><div class="queue-wait wait-delay">+9.5h</div></div>
       </div>
     </div>
 
-    <!-- BERTH-07 -->
     <div class="berth-card">
-      <div class="berth-header">
-        <div>
-          <div class="berth-name">BERTH-07</div>
-          <div class="berth-meta">Medium · 3 cranes</div>
-        </div>
-        <span class="status-badge status-free">Free</span>
-      </div>
+      <div class="berth-header"><div><div class="berth-name">BERTH-07</div><div class="berth-meta">Medium &middot; 3 cranes</div></div><span class="status-badge status-free">Free</span></div>
       <div class="berth-queue">
-        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-003</div><div class="queue-time">07:45 – 15:45</div><div class="queue-wait wait-ok">On time</div></div>
-        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-006</div><div class="queue-time">15:45 – 23:45</div><div class="queue-wait wait-delay">+5.75h</div></div>
-        <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-010</div><div class="queue-time">23:45 – 07:45</div><div class="queue-wait wait-delay">+9.25h</div></div>
+        <div class="queue-item"><div class="queue-num">1</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-003</div><div class="queue-time">07:45 &ndash; 15:45</div><div class="queue-wait wait-ok">On time</div></div>
+        <div class="queue-item"><div class="queue-num">2</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-006</div><div class="queue-time">15:45 &ndash; 23:45</div><div class="queue-wait wait-delay">+5.75h</div></div>
+        <div class="queue-item"><div class="queue-num">3</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-010</div><div class="queue-time">23:45 &ndash; 07:45</div><div class="queue-wait wait-delay">+9.25h</div></div>
         <div class="queue-item"><div class="queue-num">4</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-014</div><div class="queue-time">Jul 16 07:45</div><div class="queue-wait wait-delay">+13.75h</div></div>
         <div class="queue-item"><div class="queue-num">5</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-018</div><div class="queue-time">Jul 16 15:45</div><div class="queue-wait wait-delay">+15.5h</div></div>
         <div class="queue-item"><div class="queue-num">6</div><div class="priority-dot dot-standard"></div><div class="queue-vessel">VSL-027</div><div class="queue-time">Jul 16 23:45</div><div class="queue-wait wait-delay">+11h</div></div>
@@ -578,14 +552,8 @@
     <table>
       <thead>
         <tr>
-          <th>Vessel</th>
-          <th>Priority</th>
-          <th>ETA</th>
-          <th>Assigned Berth</th>
-          <th>Berth Start</th>
-          <th>Wait</th>
-          <th>TEU</th>
-          <th>Status</th>
+          <th>Vessel</th><th>Priority</th><th>ETA</th><th>Assigned Berth</th>
+          <th>Berth Start</th><th>Wait</th><th>TEU</th><th>Status</th>
         </tr>
       </thead>
       <tbody>
@@ -611,23 +579,201 @@
     </table>
   </div>
 
-  <!-- Legend -->
-  <div style="margin-top:16px; display:flex; gap:20px; flex-wrap:wrap; font-size:12px; color:var(--muted);">
-    <div style="display:flex;align-items:center;gap:6px;"><span class="priority-dot dot-critical" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#dc2626;"></span> Critical cargo</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d97706;"></span> Priority cargo</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb;"></span> Standard cargo</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#ef4444;font-weight:700;">Red wait</span> = &gt;12 h delay</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#f59e0b;font-weight:700;">Amber wait</span> = 3–12 h delay</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#22c55e;font-weight:700;">Green wait</span> = &lt;3 h / on time</div>
+  <div style="margin-top:16px;display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--muted);">
+    <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#dc2626"></span> Critical cargo</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d97706"></span> Priority cargo</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb"></span> Standard cargo</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#ef4444;font-weight:700">Red wait</span> = &gt;12 h delay</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#f59e0b;font-weight:700">Amber wait</span> = 3&ndash;12 h delay</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#22c55e;font-weight:700">Green wait</span> = &lt;3 h / on time</div>
   </div>
 
-</div><!-- /.main -->
+</div>
 
 <footer>
-  PortWise — Container Congestion Predictor &amp; Port Operations Optimiser &nbsp;|&nbsp;
-  Simulated data only — no real vessel or cargo data &nbsp;|&nbsp;
+  PortWise &mdash; Container Congestion Predictor &amp; Port Operations Optimiser &nbsp;|&nbsp;
+  Simulated data only &mdash; no real vessel or cargo data &nbsp;|&nbsp;
   Made with IBM Bob
 </footer>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// PORT MAP — centred on Port of Los Angeles / Long Beach
+// Real berth coordinates are approximated along the actual berth lines
+// visible on satellite imagery of the San Pedro Bay terminal complex.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const map = L.map('port-map', {
+  center: [33.738, -118.265],
+  zoom: 14,
+  zoomControl: true,
+  attributionControl: true
+});
+
+// ESRI World Imagery (free satellite tiles, no API key needed)
+L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
+    maxZoom: 19
+  }
+).addTo(map);
+
+// ── Berth definitions ─────────────────────────────────────────────────────────
+// Placed along the actual terminal quay lines visible on satellite view
+const berths = [
+  { id:'BERTH-01', lat:33.7440, lng:-118.2720, status:'occupied',     cranes:4, size:'Large',       queue:5, next:'Jul 15 08:00' },
+  { id:'BERTH-02', lat:33.7420, lng:-118.2690, status:'free',         cranes:6, size:'Ultra Large',  queue:4, next:'Available now' },
+  { id:'BERTH-03', lat:33.7395, lng:-118.2660, status:'free',         cranes:3, size:'Medium',       queue:6, next:'Available now' },
+  { id:'BERTH-04', lat:33.7370, lng:-118.2630, status:'occupied',     cranes:5, size:'Large',        queue:5, next:'Jul 15 10:30' },
+  { id:'BERTH-05', lat:33.7345, lng:-118.2600, status:'maintenance',  cranes:2, size:'Small',        queue:0, next:'Jul 16 06:00' },
+  { id:'BERTH-06', lat:33.7360, lng:-118.2680, status:'occupied',     cranes:6, size:'Ultra Large',  queue:4, next:'Jul 15 14:00' },
+  { id:'BERTH-07', lat:33.7335, lng:-118.2650, status:'free',         cranes:3, size:'Medium',       queue:6, next:'Available now' },
+  { id:'BERTH-08', lat:33.7310, lng:-118.2620, status:'maintenance',  cranes:4, size:'Large',        queue:0, next:'Jul 15 18:00' },
+];
+
+const statusColour = { free:'#22c55e', occupied:'#3b82f6', maintenance:'#ef4444' };
+const statusClass  = { free:'popup-status-free', occupied:'popup-status-occ', maintenance:'popup-status-maint' };
+
+berths.forEach(b => {
+  const colour = statusColour[b.status];
+
+  // Berth marker: square icon styled like a dock pad
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:18px;height:18px;
+      background:${colour};
+      border:2px solid rgba(255,255,255,0.8);
+      border-radius:3px;
+      box-shadow:0 0 8px ${colour};
+      display:flex;align-items:center;justify-content:center;
+      font-size:8px;font-weight:700;color:#fff;
+    ">${b.id.replace('BERTH-','')}</div>`,
+    iconSize:[18,18],
+    iconAnchor:[9,9]
+  });
+
+  const marker = L.marker([b.lat, b.lng], { icon }).addTo(map);
+
+  marker.bindPopup(`
+    <div class="popup-title">${b.id}</div>
+    <div class="popup-row"><span>Status</span><span class="${statusClass[b.status]}">${b.status.toUpperCase()}</span></div>
+    <div class="popup-row"><span>Size class</span><span>${b.size}</span></div>
+    <div class="popup-row"><span>Cranes</span><span>${b.cranes}</span></div>
+    <div class="popup-row"><span>Queue depth</span><span>${b.queue} vessels</span></div>
+    <div class="popup-row"><span>Next available</span><span>${b.next}</span></div>
+  `, { maxWidth: 220 });
+});
+
+// ── Vessel approach paths ─────────────────────────────────────────────────────
+// Vessels approach from the open ocean (SW of the port entrance channel)
+// Each path is a dashed polyline from the anchorage zone into its assigned berth.
+const vessels = [
+  // Critical (red) — approach from deep SW, head to ultra-large berths
+  { id:'VSL-004', priority:'critical', color:'#dc2626', from:[33.700,-118.330], to:[33.7420,-118.2690], teu:4500 },
+  { id:'VSL-011', priority:'critical', color:'#dc2626', from:[33.695,-118.340], to:[33.7360,-118.2680], teu:5200 },
+  { id:'VSL-016', priority:'critical', color:'#dc2626', from:[33.690,-118.320], to:[33.7420,-118.2690], teu:4100 },
+  { id:'VSL-021', priority:'critical', color:'#dc2626', from:[33.698,-118.350], to:[33.7360,-118.2680], teu:4800 },
+  { id:'VSL-028', priority:'critical', color:'#dc2626', from:[33.693,-118.315], to:[33.7420,-118.2690], teu:4600 },
+  // Priority (amber) — approach from S/SW
+  { id:'VSL-002', priority:'priority', color:'#d97706', from:[33.705,-118.310], to:[33.7440,-118.2720], teu:3200 },
+  { id:'VSL-007', priority:'priority', color:'#d97706', from:[33.700,-118.295], to:[33.7370,-118.2630], teu:3800 },
+  { id:'VSL-009', priority:'priority', color:'#d97706', from:[33.703,-118.305], to:[33.7440,-118.2720], teu:2950 },
+  { id:'VSL-013', priority:'priority', color:'#d97706', from:[33.697,-118.290], to:[33.7370,-118.2630], teu:3100 },
+  { id:'VSL-019', priority:'priority', color:'#d97706', from:[33.706,-118.300], to:[33.7440,-118.2720], teu:3500 },
+  // Standard (blue) — approach from SE channel
+  { id:'VSL-001', priority:'standard', color:'#60a5fa', from:[33.712,-118.280], to:[33.7395,-118.2660], teu:1850 },
+  { id:'VSL-003', priority:'standard', color:'#60a5fa', from:[33.715,-118.275], to:[33.7335,-118.2650], teu:980  },
+  { id:'VSL-005', priority:'standard', color:'#60a5fa', from:[33.710,-118.285], to:[33.7395,-118.2660], teu:2100 },
+  { id:'VSL-006', priority:'standard', color:'#60a5fa', from:[33.718,-118.278], to:[33.7335,-118.2650], teu:760  },
+  { id:'VSL-008', priority:'standard', color:'#60a5fa', from:[33.713,-118.282], to:[33.7395,-118.2660], teu:1400 },
+];
+
+vessels.forEach(v => {
+  // Dashed approach path line
+  L.polyline([v.from, v.to], {
+    color: v.color,
+    weight: v.priority === 'critical' ? 2.5 : 1.8,
+    opacity: 0.75,
+    dashArray: v.priority === 'critical' ? '6,4' : '4,5'
+  }).addTo(map);
+
+  // Vessel position marker (circle at anchorage point)
+  const pulseSize = v.priority === 'critical' ? 12 : v.priority === 'priority' ? 10 : 8;
+  const vesselIcon = L.divIcon({
+    className: '',
+    html: `<div class="vessel-pulse" style="
+      width:${pulseSize}px;height:${pulseSize}px;
+      background:${v.color};
+      border:1.5px solid rgba(255,255,255,0.9);
+      border-radius:50%;
+      box-shadow:0 0 ${v.priority==='critical'?'10px':'6px'} ${v.color};
+    "></div>`,
+    iconSize:[pulseSize,pulseSize],
+    iconAnchor:[pulseSize/2,pulseSize/2]
+  });
+
+  L.marker(v.from, { icon: vesselIcon })
+    .addTo(map)
+    .bindPopup(`
+      <div class="popup-title">${v.id}</div>
+      <div class="popup-row"><span>Priority</span><span style="color:${v.color};font-weight:700">${v.priority.toUpperCase()}</span></div>
+      <div class="popup-row"><span>Cargo</span><span>${v.teu.toLocaleString()} TEU</span></div>
+      <div class="popup-row"><span>Status</span><span>Approaching</span></div>
+    `, { maxWidth: 180 });
+});
+
+// ── Hotspot zone highlight ────────────────────────────────────────────────────
+// Draw a pulsing amber polygon over the deep-water berth zone (BERTH-02 & 06)
+L.polygon([
+  [33.7455, -118.2730],
+  [33.7455, -118.2660],
+  [33.7340, -118.2660],
+  [33.7340, -118.2730],
+], {
+  color: '#f59e0b',
+  weight: 2,
+  opacity: 0.9,
+  fillColor: '#f59e0b',
+  fillOpacity: 0.08,
+  dashArray: '6,4'
+}).addTo(map).bindPopup(`
+  <div class="popup-title" style="color:#fbbf24">&#9888; Congestion Hotspot</div>
+  <div class="popup-row"><span>Zone</span><span>Deep Water Berths</span></div>
+  <div class="popup-row"><span>Severity</span><span style="color:#fbbf24;font-weight:700">MEDIUM</span></div>
+  <div class="popup-row"><span>Window</span><span>Jul 15 04:30–10:30</span></div>
+  <div class="popup-row"><span>Util. ratio</span><span style="color:#fbbf24;font-weight:700">1.33</span></div>
+`, { maxWidth: 220 });
+
+// ── Anchorage waiting zone ────────────────────────────────────────────────────
+// Circle showing the offshore anchorage zone where delayed vessels wait
+L.circle([33.698, -118.318], {
+  radius: 1200,
+  color: '#7a90b0',
+  weight: 1.5,
+  opacity: 0.6,
+  fillColor: '#7a90b0',
+  fillOpacity: 0.05,
+  dashArray: '5,6'
+}).addTo(map).bindPopup(`
+  <div class="popup-title">Anchorage Zone</div>
+  <div class="popup-row"><span>Vessels waiting</span><span>18 delayed</span></div>
+  <div class="popup-row"><span>Avg wait</span><span>10.5 h (standard)</span></div>
+`, { maxWidth: 180 });
+
+// Label the anchorage zone
+L.marker([33.698, -118.318], {
+  icon: L.divIcon({
+    className: '',
+    html: `<div style="color:#7a90b0;font-size:11px;font-weight:600;font-family:-apple-system,sans-serif;white-space:nowrap;text-shadow:0 1px 3px #000">ANCHORAGE ZONE</div>`,
+    iconSize: [120, 16],
+    iconAnchor: [60, -4]
+  })
+}).addTo(map);
+</script>
 
 </body>
 </html>
