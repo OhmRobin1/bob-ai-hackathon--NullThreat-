@@ -1,0 +1,78 @@
+name: Deploy Dashboard
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  # ── Job 1: Deploy to GitHub Pages on every push to main ───────────────────
+  deploy-pages:
+    name: Publish to GitHub Pages
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # GitHub Pages needs a single folder to deploy from.
+      # We copy index.html into a dedicated folder so Pages only serves the dashboard.
+      - name: Prepare Pages content
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ── Job 2: Create a GitHub Release and attach the dashboard on new tags ───
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Zip the dashboard so it's easy to download as a single file
+      - name: Package dashboard
+        run: |
+          cp index.html portwise-dashboard.html
+          zip portwise-dashboard.zip portwise-dashboard.html
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "PortWise ${{ github.ref_name }}"
+          body: |
+            ## PortWise — Container Congestion Predictor & Port Operations Optimiser
+
+            ### What's in this release
+            - **portwise-dashboard.html** — self-contained operations dashboard (open in any browser, no server needed)
+            - **portwise-dashboard.zip** — same file zipped for easy download
+
+            ### How to open
+            Download `portwise-dashboard.html` and double-click it — no installation required.
+
+            ### Live URL
+            The dashboard is also always available at:
+            https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          files: |
+            portwise-dashboard.html
+            portwise-dashboard.zip
+          draft: false
+          prerelease: false
