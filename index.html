@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PortWise — Container Congestion Predictor</title>
 
+<!-- Inter font for sharp, modern typography -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <!-- Leaflet CSS for the satellite map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
@@ -12,23 +15,23 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0b1120;
-    --surface: #131d30;
-    --card: #1a2640;
-    --border: #243351;
-    --text: #e2e8f0;
-    --muted: #7a90b0;
-    --accent: #3b82f6;
-    --green: #22c55e;
-    --yellow: #f59e0b;
-    --red: #ef4444;
+    --bg:       #f0f4ff;
+    --surface:  #ffffff;
+    --card:     #ffffff;
+    --border:   #dde3f0;
+    --text:     #1a2035;
+    --muted:    #6b7a99;
+    --accent:   #2563eb;
+    --green:    #16a34a;
+    --yellow:   #d97706;
+    --red:      #dc2626;
     --critical: #dc2626;
     --priority: #d97706;
     --standard: #2563eb;
   }
 
   body {
-    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-family: 'Inter', -apple-system, "Segoe UI", system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     font-size: 14px;
@@ -40,47 +43,69 @@
   header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 16px rgba(37,99,235,0.07);
     padding: 0 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 64px;
     position: sticky;
     top: 0;
     z-index: 1000;
   }
-  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo { display: flex; align-items: center; gap: 12px; }
   .logo-icon {
-    width: 34px; height: 34px;
-    background: var(--accent);
-    border-radius: 8px;
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
   }
-  .logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; color: var(--text); }
   .logo-sub { font-size: 11px; color: var(--muted); }
   .header-meta { font-size: 12px; color: var(--muted); text-align: right; }
   .header-meta strong { color: var(--text); }
 
   /* ── Hero banner ── */
   .hero {
-    background: linear-gradient(135deg, #0f1e38 0%, #0b1120 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 28px 32px 24px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 45%, #2563eb 100%);
+    border-bottom: none;
+    padding: 36px 32px 32px;
+    position: relative;
+    overflow: hidden;
   }
-  .hero h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-  .hero p { color: var(--muted); font-size: 13px; max-width: 640px; }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 280px; height: 280px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 40%;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; color: #fff; }
+  .hero p { color: rgba(255,255,255,0.75); font-size: 13px; max-width: 640px; }
   .hero-badge {
     display: inline-block;
-    background: rgba(59,130,246,0.15);
-    color: var(--accent);
-    border: 1px solid rgba(59,130,246,0.3);
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
     border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
-    padding: 2px 8px;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    margin-bottom: 10px;
+    letter-spacing: 0.6px;
     text-transform: uppercase;
   }
 
@@ -88,6 +113,7 @@
   .map-section {
     position: relative;
     border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(37,99,235,0.06);
   }
   #port-map {
     width: 100%;
@@ -98,12 +124,13 @@
     top: 14px;
     left: 14px;
     z-index: 900;
-    background: rgba(11,17,32,0.88);
+    background: rgba(255,255,255,0.95);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 12px 16px;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
     min-width: 200px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   }
   .map-overlay-title {
     font-size: 11px;
@@ -118,6 +145,7 @@
     align-items: center;
     gap: 8px;
     font-size: 12px;
+    color: var(--text);
     margin-bottom: 6px;
   }
   .map-dot {
@@ -128,46 +156,47 @@
     bottom: 14px;
     right: 14px;
     z-index: 900;
-    background: rgba(11,17,32,0.88);
-    border: 1px solid rgba(245,158,11,0.4);
-    border-radius: 8px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(217,119,6,0.4);
+    border-radius: 10px;
     padding: 8px 14px;
     font-size: 12px;
-    color: #fbbf24;
+    color: #b45309;
     font-weight: 600;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(217,119,6,0.15);
   }
-  /* Override Leaflet popup style to match dark theme */
+  /* Override Leaflet popup style to match light theme */
   .leaflet-popup-content-wrapper {
-    background: #1a2640;
-    color: #e2e8f0;
-    border: 1px solid #243351;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    background: #ffffff;
+    color: #1a2035;
+    border: 1px solid #dde3f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(37,99,235,0.12);
     font-size: 12px;
-    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-family: 'Inter', -apple-system, "Segoe UI", system-ui, sans-serif;
   }
-  .leaflet-popup-tip { background: #1a2640; }
+  .leaflet-popup-tip { background: #ffffff; }
   .leaflet-popup-content { margin: 10px 14px; }
-  .popup-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
-  .popup-row { display: flex; justify-content: space-between; gap: 16px; color: #7a90b0; }
-  .popup-row span:last-child { color: #e2e8f0; font-weight: 600; }
-  .popup-status-free    { color: #22c55e; font-weight: 700; }
-  .popup-status-occ     { color: #3b82f6; font-weight: 700; }
-  .popup-status-maint   { color: #ef4444; font-weight: 700; }
+  .popup-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; color: #1a2035; }
+  .popup-row { display: flex; justify-content: space-between; gap: 16px; color: #6b7a99; }
+  .popup-row span:last-child { color: #1a2035; font-weight: 600; }
+  .popup-status-free    { color: #16a34a; font-weight: 700; }
+  .popup-status-occ     { color: #2563eb; font-weight: 700; }
+  .popup-status-maint   { color: #dc2626; font-weight: 700; }
 
   /* ── Layout ── */
-  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  .main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
   .section-title {
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
     color: var(--muted);
-    margin-bottom: 14px;
-    margin-top: 32px;
+    margin-bottom: 16px;
+    margin-top: 36px;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
   }
   .section-title:first-child { margin-top: 0; }
 
@@ -175,147 +204,181 @@
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
+    gap: 14px;
     margin-bottom: 8px;
   }
   .kpi-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
+    border-top: 3px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
-  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .kpi-value { font-size: 28px; font-weight: 700; line-height: 1; }
-  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .kpi-green .kpi-value { color: var(--green); }
-  .kpi-red .kpi-value { color: var(--red); }
-  .kpi-yellow .kpi-value { color: var(--yellow); }
-  .kpi-blue .kpi-value { color: var(--accent); }
+  .kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(37,99,235,0.12);
+  }
+  .kpi-green { border-top-color: #16a34a; }
+  .kpi-green:hover { box-shadow: 0 12px 32px rgba(22,163,74,0.15); }
+  .kpi-red   { border-top-color: #dc2626; }
+  .kpi-red:hover   { box-shadow: 0 12px 32px rgba(220,38,38,0.15); }
+  .kpi-yellow{ border-top-color: #d97706; }
+  .kpi-yellow:hover{ box-shadow: 0 12px 32px rgba(217,119,6,0.15); }
+  .kpi-blue  { border-top-color: #2563eb; }
+  .kpi-blue:hover  { box-shadow: 0 12px 32px rgba(37,99,235,0.15); }
+
+  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; font-weight: 600; }
+  .kpi-value { font-size: 30px; font-weight: 700; line-height: 1; }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .kpi-green .kpi-value { color: #16a34a; }
+  .kpi-red .kpi-value   { color: #dc2626; }
+  .kpi-yellow .kpi-value{ color: #d97706; }
+  .kpi-blue .kpi-value  { color: #2563eb; }
 
   /* ── Hotspot alert ── */
   .hotspot-card {
-    background: rgba(245,158,11,0.08);
-    border: 1px solid rgba(245,158,11,0.35);
-    border-radius: 10px;
-    padding: 16px 20px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #d97706;
+    border-radius: 12px;
+    padding: 18px 20px;
     margin-bottom: 10px;
     display: flex;
     align-items: flex-start;
     gap: 14px;
+    box-shadow: 0 2px 12px rgba(217,119,6,0.08);
   }
   .hotspot-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-  .hotspot-title { font-weight: 600; font-size: 14px; color: #fbbf24; margin-bottom: 4px; }
-  .hotspot-body { font-size: 13px; color: var(--text); }
-  .hotspot-body span { color: var(--muted); }
+  .hotspot-title { font-weight: 700; font-size: 14px; color: #92400e; margin-bottom: 4px; }
+  .hotspot-body { font-size: 13px; color: #78350f; }
+  .hotspot-body span { color: #a16207; }
   .hotspot-action {
     margin-top: 8px;
     font-size: 12px;
-    background: rgba(245,158,11,0.12);
+    background: #fef3c7;
     border-left: 3px solid #f59e0b;
-    padding: 6px 10px;
-    border-radius: 0 4px 4px 0;
-    color: #fde68a;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    color: #92400e;
   }
 
   /* ── Berth grid ── */
   .berth-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
+    gap: 14px;
   }
   .berth-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .berth-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(37,99,235,0.1);
   }
   .berth-header {
-    padding: 12px 16px;
+    padding: 14px 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border);
+    background: #f8faff;
   }
-  .berth-name { font-weight: 700; font-size: 14px; }
+  .berth-name { font-weight: 700; font-size: 14px; color: var(--text); }
   .berth-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .status-badge {
-    font-size: 10px; font-weight: 600;
-    padding: 3px 8px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px;
     text-transform: uppercase; letter-spacing: 0.5px;
   }
-  .status-free { background: rgba(34,197,94,0.15); color: var(--green); }
-  .status-occupied { background: rgba(59,130,246,0.15); color: var(--accent); }
-  .status-maintenance { background: rgba(239,68,68,0.15); color: var(--red); }
-  .berth-queue { padding: 10px 0; }
+  .status-free        { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .status-occupied    { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .status-maintenance { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  .berth-queue { padding: 8px 0; }
   .queue-item {
-    padding: 7px 16px;
+    padding: 8px 18px;
     display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid rgba(36,51,81,0.6);
+    border-bottom: 1px solid #f0f4ff;
     font-size: 12px;
+    transition: background 0.15s;
   }
+  .queue-item:hover { background: #f8faff; }
   .queue-item:last-child { border-bottom: none; }
   .queue-num {
-    width: 18px; height: 18px; border-radius: 50%;
-    background: var(--border); color: var(--muted); font-size: 10px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #e8edf8; color: var(--muted); font-size: 10px; font-weight: 600;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .queue-vessel { font-weight: 600; flex: 0 0 68px; }
+  .queue-vessel { font-weight: 600; flex: 0 0 68px; color: var(--text); }
   .queue-time { color: var(--muted); flex: 1; }
   .priority-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .dot-critical { background: var(--critical); }
-  .dot-priority { background: var(--priority); }
-  .dot-standard { background: var(--standard); }
-  .queue-wait { font-size: 10px; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; }
-  .wait-ok { background: rgba(34,197,94,0.12); color: var(--green); }
-  .wait-delay { background: rgba(239,68,68,0.12); color: #fca5a5; }
+  .dot-critical { background: #dc2626; box-shadow: 0 0 5px rgba(220,38,38,0.5); }
+  .dot-priority { background: #d97706; box-shadow: 0 0 5px rgba(217,119,6,0.4); }
+  .dot-standard { background: #2563eb; }
+  .queue-wait { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
+  .wait-ok    { background: #dcfce7; color: #15803d; }
+  .wait-delay { background: #fee2e2; color: #b91c1c; }
 
   /* ── At-risk table ── */
-  .table-wrap { overflow-x: auto; }
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th {
-    background: var(--surface); color: var(--muted); font-weight: 600;
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 10px 14px; text-align: left;
-    border-bottom: 1px solid var(--border); white-space: nowrap;
+    background: #f8faff; color: var(--muted); font-weight: 700;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
+    padding: 12px 16px; text-align: left;
+    border-bottom: 2px solid var(--border); white-space: nowrap;
   }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
-  tbody tr:hover { background: rgba(255,255,255,0.03); }
-  tbody td { padding: 10px 14px; vertical-align: middle; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid #f0f4ff; transition: background 0.15s; }
+  tbody tr:hover { background: #f0f4ff; }
+  tbody td { padding: 11px 16px; vertical-align: middle; white-space: nowrap; }
   .pill {
-    display: inline-block; padding: 2px 9px; border-radius: 20px;
-    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
   }
-  .pill-critical { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.3); }
-  .pill-priority { background: rgba(217,119,6,0.15); color: #fcd34d; border: 1px solid rgba(217,119,6,0.3); }
-  .pill-standard { background: rgba(37,99,235,0.15); color: #93c5fd; border: 1px solid rgba(37,99,235,0.3); }
-  .pill-delayed { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
-  .wait-text-long { color: var(--red); font-weight: 600; }
-  .wait-text-med  { color: var(--yellow); font-weight: 600; }
-  .wait-text-ok   { color: var(--green); }
+  .pill-critical { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  .pill-priority { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .pill-standard { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .pill-delayed  { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  .wait-text-long { color: #dc2626; font-weight: 700; }
+  .wait-text-med  { color: #d97706; font-weight: 700; }
+  .wait-text-ok   { color: #16a34a; font-weight: 600; }
 
   /* ── Charts ── */
-  .chart-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .chart-section { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .chart-card {
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 18px 20px;
+    border-radius: 12px; padding: 20px 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s ease;
   }
-  .chart-card-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; }
-  .bar-label { width: 80px; flex-shrink: 0; color: var(--muted); text-align: right; }
-  .bar-track { flex: 1; background: var(--border); border-radius: 4px; height: 10px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; }
-  .bar-val { width: 50px; flex-shrink: 0; font-weight: 600; }
+  .chart-card:hover { box-shadow: 0 8px 24px rgba(37,99,235,0.09); }
+  .chart-card-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 18px; }
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 12px; }
+  .bar-label { width: 80px; flex-shrink: 0; color: var(--muted); text-align: right; font-weight: 500; }
+  .bar-track { flex: 1; background: #e8edf8; border-radius: 6px; height: 12px; overflow: hidden; }
+  .bar-fill {
+    height: 100%; border-radius: 6px;
+    transition: width 0.6s ease;
+  }
+  .bar-val { width: 56px; flex-shrink: 0; font-weight: 700; }
 
   /* ── Footer ── */
   footer {
-    text-align: center; padding: 24px 32px; font-size: 11px;
-    color: var(--muted); border-top: 1px solid var(--border); margin-top: 40px;
+    text-align: center; padding: 28px 32px; font-size: 11px;
+    color: var(--muted); border-top: 1px solid var(--border); margin-top: 48px;
+    background: var(--surface);
   }
 
   @media (max-width: 700px) {
     header { padding: 0 16px; }
     .main { padding: 16px; }
-    .hero { padding: 20px 16px; }
+    .hero { padding: 24px 16px; }
     .chart-section { grid-template-columns: 1fr; }
     #port-map { height: 320px; }
   }
@@ -323,10 +386,18 @@
   /* Vessel icon pulse animation */
   @keyframes pulse {
     0%   { transform: scale(1);   opacity: 1; }
-    50%  { transform: scale(1.5); opacity: 0.6; }
+    50%  { transform: scale(1.6); opacity: 0.55; }
     100% { transform: scale(1);   opacity: 1; }
   }
   .vessel-pulse { animation: pulse 2s infinite; }
+
+  /* Fade-in animation for cards */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .kpi-card  { animation: fadeUp 0.4s ease both; }
+  .berth-card{ animation: fadeUp 0.4s ease both; }
 </style>
 </head>
 <body>
@@ -367,7 +438,7 @@
     <div class="map-legend-row"><div class="map-dot" style="background:#dc2626; box-shadow:0 0 6px #dc2626"></div> Critical vessel</div>
     <div class="map-legend-row"><div class="map-dot" style="background:#d97706; box-shadow:0 0 6px #d97706"></div> Priority vessel</div>
     <div class="map-legend-row"><div class="map-dot" style="background:#60a5fa"></div> Standard vessel</div>
-    <div class="map-legend-row" style="margin-top:6px; padding-top:6px; border-top:1px solid #243351">
+    <div class="map-legend-row" style="margin-top:6px; padding-top:6px; border-top:1px solid #dde3f0">
       <svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/></svg>
       Approach path
     </div>
@@ -432,27 +503,27 @@
       <div class="bar-row">
         <div class="bar-label">Critical</div>
         <div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div>
-        <div class="bar-val" style="color:#fca5a5">23,200</div>
+        <div class="bar-val" style="color:#b91c1c">23,200</div>
       </div>
       <div class="bar-row">
         <div class="bar-label">Priority</div>
         <div class="bar-track"><div class="bar-fill" style="width:88%;background:#d97706"></div></div>
-        <div class="bar-val" style="color:#fcd34d">26,650</div>
+        <div class="bar-val" style="color:#92400e">26,650</div>
       </div>
       <div class="bar-row">
         <div class="bar-label">Standard</div>
         <div class="bar-track"><div class="bar-fill" style="width:72%;background:#2563eb"></div></div>
-        <div class="bar-val" style="color:#93c5fd">21,630</div>
+        <div class="bar-val" style="color:#1d4ed8">21,630</div>
       </div>
     </div>
     <div class="chart-card">
       <div class="chart-card-title">Berth Queue Depth (vessels assigned)</div>
-      <div class="bar-row"><div class="bar-label">BERTH-01</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">5</div></div>
-      <div class="bar-row"><div class="bar-label">BERTH-02</div><div class="bar-track"><div class="bar-fill" style="width:67%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">4</div></div>
-      <div class="bar-row"><div class="bar-label">BERTH-03</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">6</div></div>
-      <div class="bar-row"><div class="bar-label">BERTH-04</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">5</div></div>
-      <div class="bar-row"><div class="bar-label">BERTH-06</div><div class="bar-track"><div class="bar-fill" style="width:67%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">4</div></div>
-      <div class="bar-row"><div class="bar-label">BERTH-07</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#3b82f6"></div></div><div class="bar-val" style="color:#93c5fd">6</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-01</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#2563eb"></div></div><div class="bar-val" style="color:#1d4ed8">5</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-02</div><div class="bar-track"><div class="bar-fill" style="width:67%;background:#2563eb"></div></div><div class="bar-val" style="color:#1d4ed8">4</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-03</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#2563eb"></div></div><div class="bar-val" style="color:#1d4ed8">6</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-04</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#2563eb"></div></div><div class="bar-val" style="color:#1d4ed8">5</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-06</div><div class="bar-track"><div class="bar-fill" style="width:67%;background:#2563eb"></div></div><div class="bar-val" style="color:#1d4ed8">4</div></div>
+      <div class="bar-row"><div class="bar-label">BERTH-07</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#2563eb"></div></div><div class="bar-val" style="color:#1d4ed8">6</div></div>
     </div>
   </div>
 
@@ -466,7 +537,7 @@
         <span>Window:</span> 15 Jul 04:30 &rarr; 15 Jul 10:30 &nbsp;|&nbsp;
         <span>Vessels arriving:</span> 2 &nbsp;|&nbsp;
         <span>Effective berths available:</span> 1.5 &nbsp;|&nbsp;
-        <span>Utilisation ratio:</span> <strong style="color:#fbbf24">1.33</strong> <span>(target &le; 1.0)</span>
+        <span>Utilisation ratio:</span> <strong style="color:#d97706">1.33</strong> <span>(target &le; 1.0)</span>
       </div>
       <div class="hotspot-action">
         Supervisor action: Monitor closely. Ensure maintenance berths are returned to service on schedule and confirm no further vessels are added to this window.
@@ -579,13 +650,13 @@
     </table>
   </div>
 
-  <div style="margin-top:16px;display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--muted);">
+  <div style="margin-top:16px;display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#6b7a99;">
     <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#dc2626"></span> Critical cargo</div>
     <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d97706"></span> Priority cargo</div>
     <div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb"></span> Standard cargo</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#ef4444;font-weight:700">Red wait</span> = &gt;12 h delay</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#f59e0b;font-weight:700">Amber wait</span> = 3&ndash;12 h delay</div>
-    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#22c55e;font-weight:700">Green wait</span> = &lt;3 h / on time</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#dc2626;font-weight:700">Red wait</span> = &gt;12 h delay</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#d97706;font-weight:700">Amber wait</span> = 3&ndash;12 h delay</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="color:#16a34a;font-weight:700">Green wait</span> = &lt;3 h / on time</div>
   </div>
 
 </div>
