@@ -99,7 +99,7 @@ CLASSIFY_MODE=watsonx python src/classify_alerts.py
 | 📹 Demo Video | [See demo/demo-video-link.txt](demo/demo-video-link.txt) |
 | 🌐 Live Demo | [See demo/live-demo-url.txt]("C:\Users\user\OneDrive\Desktop\ibm.mp4") |
 | 🖼️ Screenshots | [See demo/screenshots/](demo/screenshots/) |
-| 📊 Presentation | [See presentation/slides.pdf]("C:\Users\user\Downloads\NullThreat.pdf") |
+| 📊 Presentation | [See screenshots/presentation.md]("https://github.com/user-attachments/files/32252865/NullThreat.pdf") |
 
 ---
 
