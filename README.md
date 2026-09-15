@@ -15,12 +15,12 @@
 
 ## 🎯 Problem Statement
 
-##Defense analysts receive thousands of security alerts daily from SIEM systems, satellite feeds, and cyber sensors, in inconsistent formats — no human team can review them all manually. Missing a genuine threat is catastrophic, while chasing false positives wastes critical response time, and commanders need clear, prioritized threat summaries in minutes, not hours.##
+<small> Defense analysts receive thousands of security alerts daily from SIEM systems, satellite feeds, and cyber sensors, in inconsistent formats — no human team can review them all manually. Missing a genuine threat is catastrophic, while chasing false positives wastes critical response time, and commanders need clear, prioritized threat summaries in minutes, not hours. </small>
 ---
 
 ## 💡 Solution
 
-##BLUFShield ingests security alerts from multiple source systems and classifies each as a false positive or confirmed threat, maps confirmed threats to MITRE ATT&CK techniques, groups correlated alerts into incident clusters, and generates a BLUF (Bottom Line Up Front) summary so analysts can act on the highest-priority threats first. It runs in two modes: an offline rule-based demo classifier for instant results, and a live watsonx.ai (Llama-3-70b-Instruct) mode for real LLM-driven classification.##
+<small> BLUFShield ingests security alerts from multiple source systems and classifies each as a false positive or confirmed threat, maps confirmed threats to MITRE ATT&CK techniques, groups correlated alerts into incident clusters, and generates a BLUF (Bottom Line Up Front) summary so analysts can act on the highest-priority threats first. It runs in two modes: an offline rule-based demo classifier for instant results, and a live watsonx.ai (Llama-3-70b-Instruct) mode for real LLM-driven classification. </small>
 ---
 
 ## ✨ Key Features
