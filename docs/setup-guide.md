@@ -1,79 +1,30 @@
 # Setup Guide
 
-> **This file is read by the automated evaluation pipeline. Be precise and complete.**
+This guide walks through running BLUFShield from a clean machine, in both demo mode (no API key needed) and live watsonx.ai mode.
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
+- **Python 3.9+** installed ([python.org](https://www.python.org/downloads/))
+- **pip** (comes bundled with Python)
+- **Git** installed
+- (Optional, for live LLM mode) An **IBM watsonx.ai API key and Project ID** — see [Watsonx.ai Mode](#watsonxai-mode-optional) below
 
-- [ ] [e.g., Python 3.11+]
-- [ ] [e.g., Node.js 18+]
-- [ ] [e.g., Docker Desktop]
-- [ ] [e.g., An IBM Cloud account with watsonx.ai access]
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and fill in the values:
-
+Check your Python version:
 ```bash
-cp .env.example .env
+python --version
 ```
 
-| Variable | Description | Required |
-|---|---|---|
-| `WATSONX_API_KEY` | Your IBM watsonx.ai API key | Yes |
-| `WATSONX_PROJECT_ID` | Your watsonx.ai project ID | Yes |
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `SLACK_WEBHOOK_URL` | Slack webhook for alerts | No |
-
-## Installation
+## Step 1 — Clone the repository
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/[your-org]/[your-repo].git
-cd [your-repo]
-
-# 2. Install backend dependencies
-[your command — e.g.: pip install -r requirements.txt]
-
-# 3. Install frontend dependencies (if applicable)
-[your command — e.g.: cd frontend && npm install]
-
-# 4. Set up the database (if applicable)
-[your command — e.g.: python manage.py migrate]
+git clone https://github.com/ohmrobin1/bob-ai-hackathon--NullThreat-.git
+cd bob-ai-hackathon--NullThreat-
 ```
 
-## Running the Application
+## Step 2 — Install dependencies
 
 ```bash
-# Start the backend
-[your command — e.g.: uvicorn app.main:app --reload]
-
-# Start the frontend (in a separate terminal, if applicable)
-[your command — e.g.: cd frontend && npm run dev]
+pip install -r requirements.txt
 ```
 
-The application will be available at: `http://localhost:[PORT]`
-
-## Running Tests
-
-```bash
-[your test command — e.g.: pytest tests/ -v]
-```
-
-## Quick Demo (Optional)
-
-If you have a demo script or sample data to showcase the project quickly:
-
-```bash
-[e.g.: python demo/seed_demo_data.py]
-[e.g.: open http://localhost:8000/demo]
-```
-
-## Troubleshooting
-
-| Issue | Solution |
-|---|---|
-| [e.g., `ModuleNotFoundError`] | [e.g., Run `pip install -r requirements.txt` again] |
-| [e.g., Database connection refused] | [e.g., Ensure PostgreSQL is running: `docker compose up db`] |
-| [e.g., watsonx.ai 401 error] | [e.g., Check `WATSONX_API_KEY` in your `.env` file] |
+This installs all
