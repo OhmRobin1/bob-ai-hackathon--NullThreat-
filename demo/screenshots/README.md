@@ -1,16 +1,26 @@
-## Screenshots
+# Screenshots
 
-![Dashboard](screenshots/01-landing-page.png)
-*Threat Intelligence Dashboard — 40 alerts analyzed, 17 confirmed threats across 10 correlated incident groups, with a BLUF summary up front.*
+Place your application screenshots in this folder.
 
-![Alert Triage](screenshots/02-alert-triage.png)
-*All Alerts view — every alert classified as Threat or False Positive with severity, MITRE technique, and source system.*
+## Naming Convention
 
-![Incident Correlation](screenshots/03-incident-correlation.png)
-*Correlated Incident Groups — related alerts automatically chained together by shared MITRE ATT&CK technique.*
+Name your screenshots sequentially so they appear in logical order:
 
-![MITRE ATT&CK Coverage](screenshots/04-mitre-coverage.png)
-*MITRE ATT&CK Matrix view — 10 techniques detected, clickable to filter back into the alert table.*
+  01-landing-page.png       ← First thing a user sees
+  02-main-feature.png       ← Your primary feature in action
+  03-output-or-results.png  ← The result / value delivered
+  04-additional-feature.png ← Any other notable screen
 
-![IBM Integration](screenshots/05-ibm-integration.png)
-*Powered by IBM watsonx.ai, built with IBM Bob.*
+## Requirements
+
+- Minimum: 3 screenshots
+- Format: PNG or JPG
+- Show the application running with real (or realistic mock) data
+- Avoid screenshots of empty states or placeholder data
+- Captions are not required but appreciated
+
+## Tips
+
+- Use a consistent browser window size across all screenshots
+- Highlight key UI elements with arrows/circles if helpful (use any image editor)
+- Include a screenshot showing IBM technology integration if applicable
