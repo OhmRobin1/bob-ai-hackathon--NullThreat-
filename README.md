@@ -97,9 +97,9 @@ CLASSIFY_MODE=watsonx python src/classify_alerts.py
 |---|---|
 | 🔗 Live Dashboard | [BLUFShield Live Demo](https://ohmrobin1.github.io/bob-ai-hackathon--NullThreat-/) |
 | 📹 Demo Video | [See demo/demo-video-link.txt](demo/demo-video-link.txt) |
-| 🌐 Live Demo | [See demo/live-demo-url.txt](demo/live-demo-url.txt) |
+| 🌐 Live Demo | [See demo/live-demo-url.txt]("C:\Users\user\OneDrive\Desktop\ibm.mp4") |
 | 🖼️ Screenshots | [See demo/screenshots/](demo/screenshots/) |
-| 📊 Presentation | [See presentation/slides.pdf](presentation/) |
+| 📊 Presentation | [See presentation/slides.pdf]("C:\Users\user\Downloads\NullThreat.pdf") |
 
 ---
 
