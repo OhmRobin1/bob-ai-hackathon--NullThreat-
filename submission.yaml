@@ -54,7 +54,7 @@ submission:
   what_we_are_most_proud_of: >         # Optional but recommended — guides judges to your best work
   We're proud that BLUFShield doesn't just classify alerts — it correlates them into incident clusters and grounds every confirmed threat in a real MITRE ATT&CK technique, giving analysts a framework-based starting point instead of a vague flag. We also built a genuinely interactive live demo where anyone can paste an alert and see the classification pipeline work in real time, rather than just showing static screenshots of output.
   known_limitations: >   
-                # Optional Uses a simulated 40-alert dataset, not a live SIEM/satellite feed integration
+  Uses a simulated 40-alert dataset, not a live SIEM/satellite feed integration
   Demo mode classification uses a 25-rule keyword engine, not the LLM — watsonx.ai mode requires an API key to activate real zero-shot classification
   MITRE ATT&CK mapping is limited to 10 predefined techniques, not the full framework
   No persistent database — results are generated per run, not stored historically across sessionsbut recommended — be honest about gaps
