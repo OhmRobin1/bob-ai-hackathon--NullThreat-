@@ -1,26 +1,16 @@
-# Screenshots
-
-Place your application screenshots in this folder.
-
-## Naming Convention
-
-Name your screenshots sequentially so they appear in logical order:
-
-  01-landing-page.png       ← First thing a user sees
-  02-main-feature.png       ← Your primary feature in action
-  03-output-or-results.png  ← The result / value delivered
-  04-additional-feature.png ← Any other notable screen
-
-## Requirements
-
-- Minimum: 3 screenshots
-- Format: PNG or JPG
-- Show the application running with real (or realistic mock) data
-- Avoid screenshots of empty states or placeholder data
-- Captions are not required but appreciated
-
-## Tips
-
-- Use a consistent browser window size across all screenshots
-- Highlight key UI elements with arrows/circles if helpful (use any image editor)
-- Include a screenshot showing IBM technology integration if applicable
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-41" src="https://github.com/user-attachments/assets/08e5e126-0b8a-4a40-9057-fd963b4c8b0b" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-44" src="https://github.com/user-attachments/assets/f214c465-a431-45ee-b159-932838f3de08" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-47" src="https://github.com/user-attachments/assets/b6874649-f6f1-47e5-ba11-b69ca4279fe8" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-53" src="https://github.com/user-attachments/assets/b2cfcf32-bc7e-48ae-9bed-d7f5ad0c6483" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-55" src="https://github.com/user-attachments/assets/95286a11-98f6-49cf-bbde-84ace97a5217" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-56" src="https://github.com/user-attachments/assets/740b4094-2446-4be7-aa39-7e53c939a47c" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-57" src="https://github.com/user-attachments/assets/1a175554-4772-4817-90b9-cb970df31d3d" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-32-59" src="https://github.com/user-attachments/assets/50a626e6-abfa-4e59-aa26-1644c89b91f6" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-00" src="https://github.com/user-attachments/assets/53b927af-7c8e-4a91-a836-a5604a2f9dff" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-01" src="https://github.com/user-attachments/assets/0960be0e-e101-4a20-bfe8-0e4e086d698c" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-05" src="https://github.com/user-attachments/assets/1436f657-b584-44de-9688-34da60601cd9" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-07" src="https://github.com/user-attachments/assets/90f51c22-444f-44d4-8c44-eb264771c910" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-11" src="https://github.com/user-attachments/assets/0867a054-8e57-489e-9311-2722b5023056" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-12" src="https://github.com/user-attachments/assets/3aab85a6-2b51-48d7-90ba-5179e50836b5" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-14" src="https://github.com/user-attachments/assets/371b2030-8712-4e25-bfc5-6ebf6bf18998" />
+<img width="1280" height="720" alt="photo_2026-09-15_22-33-18" src="https://github.com/user-attachments/assets/823463bf-f945-4d66-85f7-6ba7bec6c1c4" />
